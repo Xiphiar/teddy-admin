@@ -8,6 +8,8 @@ import Layout from "./layout/Layout";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
+import Mint from "./pages/Mint";
+import GoldToken from "./pages/GoldToken";
 
 const App = () => {
   return (
@@ -16,6 +18,8 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Home />} exact />
           <Route path="/about" element={<About />} />
+          <Route path="/mint" element={<Mint />} />
+          <Route path="/goldticket" element={<GoldToken />} />
           <Route element={<NotFound />} />
         </Routes>
       </Container>
