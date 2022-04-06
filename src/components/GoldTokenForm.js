@@ -116,8 +116,8 @@ export default function GoldTokenForm() {
         setValidated(true);
         */
     } catch(err) {
-        console.error(err.response.data.message || err.message);
-        alert(err.response.data.message || err.message);
+        console.error(err.response?.data?.message || err.message || err);
+        alert(err.response?.data?.message || err.message || err);
         //throw err.response.statusText;
     }
     };
