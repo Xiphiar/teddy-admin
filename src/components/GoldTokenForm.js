@@ -18,7 +18,7 @@ import PrivateDropzone from './PrivateDropzone'
 import encryptFile from '../utils/encrypt';
 
 const permitName = "MTC-Golden-Token";
-const allowedDestinations = ["teddyapi.xiphiar.com", "localhost:9176"];
+const allowedDestinations = ["teddyapi.xiphiar.com", "localhost:9176", 'teddyapi-testnet.xiphiar.com'];
 const permissions = ["mint"];
 
 export default function GoldTokenForm() {
@@ -85,7 +85,7 @@ export default function GoldTokenForm() {
 
 
         const response = await axios.post(
-            "http://localhost:9176/mintGoldToken",
+            `${process.env.REACT_APP_BACKEND_URL}/mintGoldToken`,
             {
               with_permit: {
                 query: { mint: { nft_id: teddyId, recipient: recipient, notes: notes } },
