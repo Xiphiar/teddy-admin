@@ -29,6 +29,13 @@ Install the dependencies:
 npm install
 ```
 
+Setup environment variables.
+You can use the included .env sample file:
+
+```powershell-interactive
+cp .env.example .env
+```
+
 ## Usage
 
 Start editing and customizing according to your needs.
