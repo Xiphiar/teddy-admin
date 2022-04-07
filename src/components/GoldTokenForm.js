@@ -62,11 +62,14 @@ export default function GoldTokenForm() {
             },
             msgs: [
               {
-                type: "query_permit", // Must be "query_permit"
+                type: "mint_ticket", // Must be "query_permit"
                 value: {
                   permit_name: permitName,
                   allowed_destinations: allowedDestinations,
-                  permissions: permissions,
+                  mint_props: {
+                    teddy_id: teddyId,
+                    recipient: recipient.trim()
+                  }
                 },
               },
             ],
@@ -83,24 +86,17 @@ export default function GoldTokenForm() {
             }
         );
 
-        const request = {
-          with_permit: {
-            query: { mint: { nft_id: teddyId, recipient: recipient.trim(), notes: notes } },
-            permit: {
-              params: {
-                permit_name: permitName,
-                allowed_destinations: allowedDestinations,
-                chain_id: process.env.REACT_APP_CHAIN_ID,
-                permissions: permissions,
-              },
-              signature: signature,
-            },
-          },
-        }
+        var params = new URLSearchParams();
+          params.append('permit_name', permitName);
+          params.append('allowed_destinations', JSON.stringify(allowedDestinations));
+          params.append('signature', JSON.stringify(signature));
+          params.append('nft_id', teddyId);
+          params.append('recipient', recipient.trim());
+          params.append('notes', notes);
 
         const response = await axios.post(
             `${process.env.REACT_APP_BACKEND_URL}/mintGoldToken`,
-            request
+            params
         );
 
         console.log(response.data);
