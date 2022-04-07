@@ -1,6 +1,5 @@
 import { SecretNetworkClient } from "secretjs";
 
-
 import React, {useCallback, useState} from 'react'
 import axios from 'axios'
 
@@ -16,6 +15,7 @@ import TraitSelect from './TraitSelect';
 import PrivateDropzone from './PrivateDropzone'
 
 import encryptFile from '../utils/encrypt';
+import validAddress from '../utils/validAddress';
 
 const permitName = "MTC-Golden-Token";
 const allowedDestinations = ["teddyapi.xiphiar.com", "localhost:9176", 'teddyapi-testnet.xiphiar.com'];
@@ -44,7 +44,7 @@ export default function GoldTokenForm() {
 
         //validate input
         if (!recipient) {throw new Error("Please enter a recipient address");}
-
+        if (!validAddress(recipient.trim())) {throw new Error("Recipient address is invalid");}
 
         await window.keplr.enable(process.env.REACT_APP_CHAIN_ID);
         
@@ -83,23 +83,24 @@ export default function GoldTokenForm() {
             }
         );
 
+        const request = {
+          with_permit: {
+            query: { mint: { nft_id: teddyId, recipient: recipient.trim(), notes: notes } },
+            permit: {
+              params: {
+                permit_name: permitName,
+                allowed_destinations: allowedDestinations,
+                chain_id: process.env.REACT_APP_CHAIN_ID,
+                permissions: permissions,
+              },
+              signature: signature,
+            },
+          },
+        }
 
         const response = await axios.post(
             `${process.env.REACT_APP_BACKEND_URL}/mintGoldToken`,
-            {
-              with_permit: {
-                query: { mint: { nft_id: teddyId, recipient: recipient, notes: notes } },
-                permit: {
-                  params: {
-                    permit_name: permitName,
-                    allowed_destinations: allowedDestinations,
-                    chain_id: process.env.REACT_APP_CHAIN_ID,
-                    permissions: permissions,
-                  },
-                  signature: signature,
-                },
-              },
-            }
+            request
         );
 
         console.log(response.data);
@@ -145,7 +146,7 @@ export default function GoldTokenForm() {
               type="text"
               placeholder="secret1..."
               value={recipient}
-              onChange={e => setRecipient(e.target.value)}
+              onChange={e => setRecipient(e.target.value.trim())}
             />
             <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
           </Form.Group>
