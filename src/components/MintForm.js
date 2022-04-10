@@ -16,6 +16,7 @@ import TraitSelect from './TraitSelect';
 import PrivateDropzone from './PrivateDropzone'
 
 import encryptFile from '../utils/encrypt';
+import addPulsar from "../utils/addPulsar";
 
 const faces = [
     'Aint no snitch',
@@ -233,12 +234,12 @@ export default function MintForm() {
             'Bear Color: ', color,
             'Priv File', privFile
         )
-
+        if (process.env.REACT_APP_CHAIN_ID.includes("pulsar")) addPulsar();
         await window.keplr.enable(process.env.REACT_APP_CHAIN_ID);
         const keplrOfflineSigner = window.getOfflineSignerOnlyAmino(process.env.REACT_APP_CHAIN_ID,);
         const [{ address: myAddress }] = await keplrOfflineSigner.getAccounts();
 
-        
+        console.log(process.env.REACT_APP_GRPC_URL)
         const secretjs = await SecretNetworkClient.create({
             grpcWebUrl: process.env.REACT_APP_GRPC_URL,
             chainId: process.env.REACT_APP_CHAIN_ID,
@@ -327,6 +328,7 @@ export default function MintForm() {
             codeHash: process.env.REACT_APP_NFT_HASH, // optional but way faster
             msg: mintMsg,
           })
+        try {
         const tx = await secretjs.tx.compute.executeContract(
             {
               sender: myAddress,
@@ -340,6 +342,9 @@ export default function MintForm() {
           );
 
         console.log(tx)
+        } catch (err) {
+            console.log(err)
+        }
         /*
         const form = event.currentTarget;
         if (form.checkValidity() === false) {
