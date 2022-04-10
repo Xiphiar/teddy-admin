@@ -4,6 +4,8 @@ import { SecretNetworkClient } from "secretjs";
 import React, {useCallback, useState} from 'react'
 import {useDropzone} from 'react-dropzone'
 
+import axios from 'axios';
+
 import Form from 'react-bootstrap/Form'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
@@ -17,6 +19,9 @@ import PrivateDropzone from './PrivateDropzone'
 
 import encryptFile from '../utils/encrypt';
 import addPulsar from "../utils/addPulsar";
+
+const permitName = "MTC-Mint-Teddy";
+const allowedDestinations = ["teddyapi.xiphiar.com", "localhost:9176", 'teddyapi-testnet.xiphiar.com'];
 
 const faces = [
     'Aint no snitch',
@@ -192,6 +197,7 @@ export default function MintForm() {
     const [privFile, setPrivFile] = useState();
     const [baseDesign, setBaseDesign] = useState();
     const [pubBaseDesign, setPubBaseDesign] = useState();
+    const [daoValue, setDaoValue] = useState("");
 
     const [face, setFace] = useState();
     const [color, setColor] = useState();
@@ -354,6 +360,74 @@ export default function MintForm() {
   
         setValidated(true);
         */
+
+        //sign permit
+        const permitTx = {
+            chain_id: process.env.REACT_APP_CHAIN_ID,
+            account_number: "0", // Must be 0
+            sequence: "0", // Must be 0
+            fee: {
+              amount: [{ denom: "uscrt", amount: "0" }], // Must be 0 uscrt
+              gas: "1", // Must be 1
+            },
+            msgs: [
+              {
+                type: "add_teddy", // Must be "query_permit"
+                value: {
+                  permit_name: permitName,
+                  allowed_destinations: allowedDestinations,
+                  mint_props: {
+                    nft_id: teddyId.toString(),
+                    base_design: baseDesign,
+                    face: face || null,
+                    color: color || null,
+                    background: background || null,
+                    hand: hand || null,
+                    head: head || null,
+                    body: body || null,
+                    eyewear: eyewear || null,
+                    pub_url: pubImage,
+                    dao_value: daoValue
+                  }
+                },
+              },
+            ],
+            memo: "" // Must be empty
+        }
+        console.log("Unsigned: ", permitTx)
+        const { signature } = await window.keplr.signAmino(
+            process.env.REACT_APP_CHAIN_ID,
+            myAddress,
+            permitTx,
+            {
+              preferNoSetFee: true, // Fee must be 0, so hide it from the user
+              preferNoSetMemo: true, // Memo must be empty, so hide it from the user
+            }
+        );
+
+        var params = new URLSearchParams();
+          params.append('permit_name', permitName);
+          params.append('allowed_destinations', JSON.stringify(allowedDestinations));
+          params.append('signature', JSON.stringify(signature));
+          params.append('nft_id', teddyId.trim());
+          params.append('base_design', baseDesign.trim());
+          if (face) params.append('face', face.trim());
+          if (color) params.append('color', color.trim());
+          if (background) params.append('background', background.trim());
+          if (hand) params.append('hand', hand.trim());
+          if (head) params.append('head', head.trim());
+          if (body) params.append('body', body.trim());
+          if (eyewear) params.append('eyewear', eyewear.trim());
+          params.append('pub_url', pubImage.trim());
+          params.append('dao_value', daoValue.trim());
+
+        const response = await axios.post(
+            `${process.env.REACT_APP_BACKEND_URL}/addData`,
+            params
+        );
+
+        console.log(response.data);
+        alert(`Success: ${response.data.message}`)
     };
   
     return (
@@ -384,6 +458,17 @@ export default function MintForm() {
         <TraitSelect value={head} set={setHead} label="On Head" options={heads}/>
         <TraitSelect value={body} set={setBody} label="On Body" options={bodys}/>
         <TraitSelect value={eyewear} set={setEyewear} label="Eyewear" options={eyewears}/>
+        <Form.Group as={Col} md="4" controlId="validationCustom01">
+            <Form.Label>DAO Value</Form.Label>
+            <Form.Control
+              required
+              type="text"
+              placeholder="21"
+              value={daoValue}
+              onChange={e => setDaoValue(e.target.value)}
+            />
+            <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
+          </Form.Group>
 
         <Button type="submit">Submit form</Button>
       </Form>
