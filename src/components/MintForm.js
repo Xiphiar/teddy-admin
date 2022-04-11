@@ -280,6 +280,7 @@ export default function MintForm() {
         //validate input
         if (!baseDesign) {return errorToast("No Base Design selected");}
         if (!privFile) {return errorToast("No Private Image Uploaded");}
+        if (!teddyId || teddyId.length>8) return errorToast("Teddy ID must be less than 8 characters.");
 
         //encrypt file
         const encryptPromise = encryptFile(privFile);
@@ -391,7 +392,7 @@ export default function MintForm() {
             {
             gasLimit: 100_000,
             },
-        );
+        ).catch(e=> toast.update(txToast, { render: "Transaction Failed", type: "error", isLoading: false, autoClose: 5000 }) );
         console.log(tx)
 
         if (tx.code) {
@@ -464,20 +465,20 @@ export default function MintForm() {
           params.append('pub_url', pubImage.trim());
           params.append('dao_value', daoValue.trim());
 
-        const responsePromise = axios.post(
-            `${process.env.REACT_APP_BACKEND_URL}/addData`,
-            params
-        );
-
-        toast.promise(
-            responsePromise,
+        const response = await toast.promise(
+            axios.post(
+                `${process.env.REACT_APP_BACKEND_URL}/addData`,
+                params
+            ).catch(err => {
+                console.error(err.response?.data?.message || err.message || err)
+                throw new Error(err.response?.data?.message || err.message || err)
+            }),
             {
             pending: 'Adding to Database...',
             success: 'Added to Database',
             error: 'Failed to add to database'
             }
         )
-        const response = await responsePromise;
         console.log(response.data);
 
         setLoading(false)
@@ -502,7 +503,7 @@ export default function MintForm() {
               type="text"
               placeholder="1234"
               value={teddyId}
-              onChange={e => setTeddyId(e.target.value)}
+              onChange={e => setTeddyId(e.target.value.trim())}
             />
             <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
           </Form.Group>
