@@ -439,16 +439,30 @@ export default function MintForm() {
         }
         console.log("Unsigned: ", permitTx)
 
-        const { signature } = await window.keplr.signAmino(
-            process.env.REACT_APP_CHAIN_ID,
-            myAddress,
-            permitTx,
-            {
-              preferNoSetFee: true, // Fee must be 0, so hide it from the user
-              preferNoSetMemo: true, // Memo must be empty, so hide it from the user
+        const signature = await tryNTimes({
+            times: 3,
+            toTry: async() => {
+                const {signature} = await window.keplr.signAmino(
+                    process.env.REACT_APP_CHAIN_ID,
+                    myAddress,
+                    permitTx,
+                    {
+                      preferNoSetFee: true, // Fee must be 0, so hide it from the user
+                      preferNoSetMemo: true, // Memo must be empty, so hide it from the user
+                    }
+                );
+                return signature
+            },
+            onErr: async(error) => {
+                console.error("Permit signing error: ", error)
+                alert('Error: Failed to sign permit.\nPlease close any Keplr windows and click OK to try again.\nYou must accept this request to add the new teddy to the rarity database!')
+                return true
             }
-        );
+        })
+        console.log(signature)
 
+
+        // new teddy data for backend API
         var params = new URLSearchParams();
           params.append('permit_name', permitName);
           params.append('allowed_destinations', JSON.stringify(allowedDestinations));
