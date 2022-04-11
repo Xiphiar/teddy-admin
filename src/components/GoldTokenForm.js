@@ -8,6 +8,7 @@ import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
 import Image from 'react-bootstrap/Image'
+import Spinner from 'react-bootstrap/Spinner'
 
 import { BaseDesignSelect } from './BaseDesignSelect';
 import FaceSelect from './FaceSelect';
@@ -23,6 +24,7 @@ const permissions = ["mint"];
 
 export default function GoldTokenForm() {
     const [validated, setValidated] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const [teddyId, setTeddyId] = useState("");
     const [recipient, setRecipient] = useState("");
@@ -32,8 +34,11 @@ export default function GoldTokenForm() {
     const handleSubmit = async(event) => {
     try{
         event.preventDefault()
+        setLoading(true);
+
         if (!window.keplr){
             alert ("Please install Keplr extension.")
+            setLoading(false);
             return;
         }
 
@@ -100,6 +105,7 @@ export default function GoldTokenForm() {
         );
 
         console.log(response.data);
+        setLoading(false)
         alert(`Success: ${response.data.message}`)
 
 
@@ -115,6 +121,7 @@ export default function GoldTokenForm() {
     } catch(err) {
         console.error(err.response?.data?.message || err.message || err);
         alert(err.response?.data?.message || err.message || err);
+        setLoading(false);
         //throw err.response.statusText;
     }
     };
@@ -158,8 +165,20 @@ export default function GoldTokenForm() {
             <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
           </Form.Group>
         </Row>
-
-        <Button type="submit">Send Token</Button>
+      { loading ?
+        <Button  disabled={loading} type="submit">
+          <Spinner
+            as="span"
+            animation="grow"
+            size="sm"
+            role="status"
+            aria-hidden="true"
+          />
+          Loading...
+        </Button>
+      :
+        <Button type="submit" disabled={loading}>Send Token</Button>
+      }
       </Form>
     );
 }

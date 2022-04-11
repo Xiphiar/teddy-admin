@@ -1,8 +1,9 @@
 import { SecretNetworkClient } from "secretjs";
 
-
 import React, {useCallback, useState} from 'react'
 import {useDropzone} from 'react-dropzone'
+
+import { toast } from 'react-toastify';
 
 import axios from 'axios';
 
@@ -11,6 +12,7 @@ import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
 import Image from 'react-bootstrap/Image'
+import Spinner from 'react-bootstrap/Spinner'
 
 import { BaseDesignSelect } from './BaseDesignSelect';
 import FaceSelect from './FaceSelect';
@@ -190,7 +192,7 @@ const eyewears = [
 ]
 
 export default function MintForm() {
-    const [validated, setValidated] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const [teddyId, setTeddyId] = useState("");
     const [pubImage, setPubImage] = useState();
@@ -206,6 +208,16 @@ export default function MintForm() {
     const [head, setHead] = useState();
     const [body, setBody] = useState();
     const [eyewear, setEyewear] = useState();
+
+    const errorToast = (message = 'Error occured, please check the console.') => {
+        setLoading(false);
+        toast(
+            message,
+            {
+                type: "error"
+            }
+        )
+    }
     
     const changeBaseDesign = (input) => {
         switch(input){
@@ -226,26 +238,37 @@ export default function MintForm() {
     }
 
     const handleSubmit = async(event) => {
+    try {
         event.preventDefault()
+        setLoading(true)
+
         if (!window.keplr){
+            setLoading(false)
             alert ("Please install Keplr extension.")
             return;
         }
 
-        console.log(
-            "ID: ", teddyId,
-            "Pub Image: ", pubImage,
-            'Base Design: ', baseDesign,
-            'Facial Expression: ', face,
-            'Bear Color: ', color,
-            'Priv File', privFile
-        )
+        //debug logging
+        console.log("Teddy Mint Info",{
+            "ID": teddyId,
+            "Pub Image": pubImage,
+            'Base Design': baseDesign,
+            'Facial Expression': face,
+            Background: background,
+            Hand: hand,
+            Head: head,
+            Body: body,
+            Eyewear: eyewear,
+            'Color': color,
+            'Priv File': privFile
+        })
+
+        // connect Keplr and create signing secretjs client
         if (process.env.REACT_APP_CHAIN_ID.includes("pulsar")) addPulsar();
         await window.keplr.enable(process.env.REACT_APP_CHAIN_ID);
         const keplrOfflineSigner = window.getOfflineSignerOnlyAmino(process.env.REACT_APP_CHAIN_ID,);
         const [{ address: myAddress }] = await keplrOfflineSigner.getAccounts();
 
-        console.log(process.env.REACT_APP_GRPC_URL)
         const secretjs = await SecretNetworkClient.create({
             grpcWebUrl: process.env.REACT_APP_GRPC_URL,
             chainId: process.env.REACT_APP_CHAIN_ID,
@@ -255,10 +278,23 @@ export default function MintForm() {
         });
 
         //validate input
-        if (!baseDesign) {throw new Error("no base Design selected");}
+        if (!baseDesign) {return errorToast("No Base Design selected");}
+        if (!privFile) {return errorToast("No Private Image Uploaded");}
 
-        const {hash, key} = await encryptFile(privFile);
-        console.log(hash, key);
+        //encrypt file
+        const encryptPromise = encryptFile(privFile);
+        toast.promise(
+            encryptPromise,
+            {
+              pending: 'Image Encrypting...',
+              success: 'Image Encrypted 👌',
+              error: 'Failed to encrypt image'
+            }
+        )
+        const {hash, key} = await encryptPromise;
+        console.log("Image Upload: ",
+            {Hash: hash, Key: key}
+        );
 
         let privAttributes = [
             {
@@ -304,6 +340,12 @@ export default function MintForm() {
             value: body.trim()
         })
 
+        if(eyewear) privAttributes.push({
+            trait_type: "Eyewear",
+            value: eyewear.trim()
+        })
+
+        // handle message to execute on the contract
         const mintMsg = {
             mint_mutant: {
                 token_id:teddyId.toString().trim(),
@@ -328,40 +370,40 @@ export default function MintForm() {
                 },
             }
         } 
-        console.log({
+
+        // debug logging
+        console.log("TX Info: ",{
+            sender: myAddress,
+            contract: process.env.REACT_APP_NFT_ADDRESS,
+            codeHash: process.env.REACT_APP_NFT_HASH,
+            msg: mintMsg,
+        })
+
+        // execute contract
+        const txToast = toast.loading("Transaction Pending...")
+        const tx = await secretjs.tx.compute.executeContract(
+            {
             sender: myAddress,
             contract: process.env.REACT_APP_NFT_ADDRESS,
             codeHash: process.env.REACT_APP_NFT_HASH, // optional but way faster
             msg: mintMsg,
-          })
-        try {
-        const tx = await secretjs.tx.compute.executeContract(
-            {
-              sender: myAddress,
-              contract: process.env.REACT_APP_NFT_ADDRESS,
-              codeHash: process.env.REACT_APP_NFT_HASH, // optional but way faster
-              msg: mintMsg,
             },
             {
-              gasLimit: 100_000,
+            gasLimit: 100_000,
             },
-          );
-
+        );
         console.log(tx)
-        } catch (err) {
-            console.log(err)
+
+        if (tx.code) {
+            toast.update(txToast, { render: "Transaction Failed", type: "error", isLoading: false, autoClose: 5000 });
+            throw new Error(tx.rawLog)
         }
-        /*
-        const form = event.currentTarget;
-        if (form.checkValidity() === false) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-  
-        setValidated(true);
-        */
+
+        toast.update(txToast, { render: "Transaction Processed", type: "success", isLoading: false, autoClose: 5000 });
+
 
         //sign permit
+        // permit is used to authenticate API
         const permitTx = {
             chain_id: process.env.REACT_APP_CHAIN_ID,
             account_number: "0", // Must be 0
@@ -395,6 +437,7 @@ export default function MintForm() {
             memo: "" // Must be empty
         }
         console.log("Unsigned: ", permitTx)
+
         const { signature } = await window.keplr.signAmino(
             process.env.REACT_APP_CHAIN_ID,
             myAddress,
@@ -421,13 +464,30 @@ export default function MintForm() {
           params.append('pub_url', pubImage.trim());
           params.append('dao_value', daoValue.trim());
 
-        const response = await axios.post(
+        const responsePromise = axios.post(
             `${process.env.REACT_APP_BACKEND_URL}/addData`,
             params
         );
 
+        toast.promise(
+            responsePromise,
+            {
+            pending: 'Adding to Database...',
+            success: 'Added to Database',
+            error: 'Failed to add to database'
+            }
+        )
+        const response = await responsePromise;
         console.log(response.data);
+
+        setLoading(false)
         alert(`Success: ${response.data.message}`)
+    } catch(err) {
+        errorToast();
+        console.error(err);
+        setLoading(false);
+        alert(`${err}\n\nIf you think a teddy was minted, or are unsure if one was, please contact Xiphiar.\nOtherwise you can try again.\nInclude any information in the console (press F12, do not refresh the page)`)
+    }
     };
   
     return (
@@ -468,9 +528,23 @@ export default function MintForm() {
               onChange={e => setDaoValue(e.target.value)}
             />
             <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
-          </Form.Group>
+        </Form.Group>
 
-        <Button type="submit">Submit form</Button>
+        <br />
+        { loading ?
+            <Button  disabled={loading} type="submit">
+            <Spinner
+                as="span"
+                animation="grow"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+            />
+            Loading...
+            </Button>
+        :
+            <Button type="submit" disabled={loading}>Mint Teddy</Button>
+        }
       </Form>
     </Col>
     <Col md="4">
