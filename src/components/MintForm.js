@@ -21,6 +21,7 @@ import PrivateDropzone from './PrivateDropzone'
 
 import encryptFile from '../utils/encrypt';
 import addPulsar from "../utils/addPulsar";
+import tryNTimes from "../utils/tryNTimes";
 
 const permitName = "MTC-Mint-Teddy";
 const allowedDestinations = ["teddyapi.xiphiar.com", "localhost:9176", 'teddyapi-testnet.xiphiar.com'];
