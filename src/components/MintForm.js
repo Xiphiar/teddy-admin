@@ -22,9 +22,21 @@ import PrivateDropzone from './PrivateDropzone'
 import encryptFile from '../utils/encrypt';
 import addPulsar from "../utils/addPulsar";
 import tryNTimes from "../utils/tryNTimes";
+import { PubImageSelect } from "./PubImageSelect";
 
 const permitName = "MTC-Mint-Teddy";
 const allowedDestinations = ["teddyapi.xiphiar.com", "localhost:9176", 'teddyapi-testnet.xiphiar.com'];
+
+const pubBaseDesigns = [
+    { type: "teddy", name: 'Teddy-bear', url: "https://arweave.net/0ZP_yaIeYc4vGwMxqoJdqgOGKjZpspl7ktGUmUvNee4"},
+    { type: "robot", name: 'Ro-Bear', url: "https://arweave.net/9JmggQG3JV5eLFZdvBfL3Vk7APLOmgN_WK4km7qq7fE"},
+    { type: "zombie", name: 'Zom-Bear', url: "https://arweave.net/X2nzHkuIKvtucDp1UhxuHjS2OgwhyqF3wKS0U4gBlpk"}
+]
+
+const extraPubImages = [
+    { name: 'Factory', url: "https://arweave.net/-Qe3YXsw5xAyCP-ZizCHSMhTiG-yN8H3VYnphbmCjK8"},
+    { name: 'Error', url: "https://arweave.net/FqTDF4Iq4Axtuv6ZG8thWrMUggx6GIcHqL-PJPJ0MfY"}
+]
 
 const faces = [
     'Aint no snitch',
@@ -197,6 +209,7 @@ export default function MintForm() {
 
     const [teddyId, setTeddyId] = useState("");
     const [pubImage, setPubImage] = useState();
+    const [pubImageOptions, setPubImageOptions] = useState([]);
     const [privFile, setPrivFile] = useState();
     const [baseDesign, setBaseDesign] = useState();
     const [pubBaseDesign, setPubBaseDesign] = useState();
@@ -223,16 +236,33 @@ export default function MintForm() {
     const changeBaseDesign = (input) => {
         switch(input){
             case 'Ro-Bear':
-                setPubImage('https://arweave.net/9JmggQG3JV5eLFZdvBfL3Vk7APLOmgN_WK4km7qq7fE');
-                setPubBaseDesign('Ro-Bear');
+                const roData = pubBaseDesigns.find((design) => design.type === 'robot');
+                setPubImageOptions([
+                    roData,
+                    ...extraPubImages
+                ])
+                setPubBaseDesign(roData.name);
                 break;
             case 'Zom-Bear':
-                setPubImage('https://arweave.net/X2nzHkuIKvtucDp1UhxuHjS2OgwhyqF3wKS0U4gBlpk');
-                setPubBaseDesign('Zom-Bear');
+                const zomData = pubBaseDesigns.find((design) => design.type === 'zombie');
+                setPubImageOptions([
+                    zomData,
+                    ...extraPubImages
+                ])
+                setPubBaseDesign(zomData.name);
+                break;
+            case '':
+                //setPubImage();
+                setPubImageOptions([])
+                setPubBaseDesign();
                 break;
             default:
-                setPubImage('https://arweave.net/0ZP_yaIeYc4vGwMxqoJdqgOGKjZpspl7ktGUmUvNee4');
-                setPubBaseDesign('Teddy-bear');
+                const tedData = pubBaseDesigns.find((design) => design.type === 'teddy');
+                setPubImageOptions([
+                    tedData,
+                    ...extraPubImages
+                ])
+                setPubBaseDesign(tedData.name);
                 break;
         }
         setBaseDesign(input);
@@ -522,7 +552,7 @@ export default function MintForm() {
             />
             <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
           </Form.Group>
-
+    
           <BaseDesignSelect baseDesign={baseDesign} setBaseDesign={changeBaseDesign}/>
         </Row>
 
@@ -570,11 +600,12 @@ export default function MintForm() {
             <Image src={pubImage} fluid style={{height: "300px"}}/>
         :
             <p>
-                Select a Base Design
+                Select a Base Design and Public Image
             </p>
         }
-        <br/>
-        <em>Will update automatically to match Base Design.</em>
+        <br/><br/>
+        <PubImageSelect value={pubImage} set={setPubImage} options={pubImageOptions} />
+        <em>Available options are based on Base Design.</em>
     </div>
 
     <div>

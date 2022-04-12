@@ -12,7 +12,6 @@ export function BaseDesignSelect({baseDesign, setBaseDesign}) {
                     as="select"
                     value={baseDesign}
                     onChange={e => {
-                        console.log(e.target);
                         setBaseDesign(e.target.value)}}
                 >
                     <option value={""}>Choose...</option>
