@@ -209,10 +209,8 @@ export default function MintTraitForm() {
 
     const [teddyId, setTeddyId] = useState("");
     const [pubImage, setPubImage] = useState("");
-    const [pubImageOptions, setPubImageOptions] = useState([]);
     const [privFile, setPrivFile] = useState();
     const baseDesign = "1/1 Trait"
-    const pubBaseDesign = "1/1 Trait"
     const daoValue = "0";
 
     const [face, setFace] = useState();
@@ -294,51 +292,44 @@ export default function MintTraitForm() {
             {Hash: hash, Key: key}
         );
 
-        let privAttributes = [
+        let attributes = [
             {
                 trait_type: "Base Design",
                 value: baseDesign.trim()
             }
         ]
 
-        let pubAttributes = [
-            {
-                trait_type: "Base Design",
-                value: pubBaseDesign.trim()
-            }
-        ]
-
-        if(face) privAttributes.push({
+        if(face) attributes.push({
             trait_type: "Face",
             value: face.trim()
         })
 
-        if(color) privAttributes.push({
+        if(color) attributes.push({
             trait_type: "Color",
             value: color.trim()
         })
 
-        if(background) privAttributes.push({
+        if(background) attributes.push({
             trait_type: "Background",
             value: background.trim()
         })
 
-        if(hand) privAttributes.push({
+        if(hand) attributes.push({
             trait_type: "Hand",
             value: hand.trim()
         })
 
-        if(head) privAttributes.push({
+        if(head) attributes.push({
             trait_type: "Head",
             value: head.trim()
         })
 
-        if(body) privAttributes.push({
+        if(body) attributes.push({
             trait_type: "Body",
             value: body.trim()
         })
 
-        if(eyewear) privAttributes.push({
+        if(eyewear) attributes.push({
             trait_type: "Eyewear",
             value: eyewear.trim()
         })
@@ -350,13 +341,13 @@ export default function MintTraitForm() {
                 public_metadata: {
                     extension: {
                         name: teddyId.toString().trim(),
-                        attributes: pubAttributes,
+                        attributes: attributes,
                         image: pubImage,
                     }
                 },
                 private_metadata: {
                     extension: {
-                        attributes: privAttributes,
+                        attributes: attributes,
                         name: teddyId.toString().trim(),
                         media: [{
                             authentication: {key: key},
