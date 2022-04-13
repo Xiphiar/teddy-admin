@@ -4,12 +4,12 @@ import { Nav, Container } from "react-bootstrap";
 const Menu = () => {
   return (
     <Container>
-      <header className="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+      <header className="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-5 border-bottom">
         <Link
           to="/"
           className="d-flex align-items-center col-md-3 mb-2 mb-md-0 text-dark text-decoration-none"
         >
-          <b>MTC Admin Dashboard</b>
+          <b>MTC Admin Dashboard{process.env.REACT_APP_CHAIN_ID.includes("secret")? <span style={{color: "red", fontSize: "1.1rem"}}>&nbsp;&nbsp;Mainnet</span>:null}</b>
         </Link>
         <Nav>
           <ul className="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0" style={{marginRight: "15px"}}>
