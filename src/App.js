@@ -13,6 +13,7 @@ import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import Mint from "./pages/Mint";
 import GoldToken from "./pages/GoldToken";
+import MintTrait from "./pages/MintTrait";
 
 
 
@@ -35,6 +36,7 @@ const App = () => {
           <Route path="/" element={<Home />} exact />
           <Route path="/about" element={<About />} />
           <Route path="/mint" element={<Mint />} />
+          <Route path="/minttrait" element={<MintTrait />} />
           <Route path="/goldticket" element={<GoldToken />} />
           <Route element={<NotFound />} />
         </Routes>

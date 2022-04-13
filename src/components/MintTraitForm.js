@@ -204,16 +204,16 @@ const eyewears = [
     'What do you call a fish with one eye?',
 ]
 
-export default function MintForm() {
+export default function MintTraitForm() {
     const [loading, setLoading] = useState(false);
 
     const [teddyId, setTeddyId] = useState("");
-    const [pubImage, setPubImage] = useState();
+    const [pubImage, setPubImage] = useState("");
     const [pubImageOptions, setPubImageOptions] = useState([]);
     const [privFile, setPrivFile] = useState();
-    const [baseDesign, setBaseDesign] = useState();
-    const [pubBaseDesign, setPubBaseDesign] = useState();
-    const [daoValue, setDaoValue] = useState("");
+    const baseDesign = "1/1 Trait"
+    const pubBaseDesign = "1/1 Trait"
+    const daoValue = "0";
 
     const [face, setFace] = useState();
     const [color, setColor] = useState();
@@ -233,40 +233,6 @@ export default function MintForm() {
         )
     }
     
-    const changeBaseDesign = (input) => {
-        switch(input){
-            case 'Ro-Bear':
-                const roData = pubBaseDesigns.find((design) => design.type === 'robot');
-                setPubImageOptions([
-                    roData,
-                    ...extraPubImages
-                ])
-                setPubBaseDesign(roData.name);
-                break;
-            case 'Zom-Bear':
-                const zomData = pubBaseDesigns.find((design) => design.type === 'zombie');
-                setPubImageOptions([
-                    zomData,
-                    ...extraPubImages
-                ])
-                setPubBaseDesign(zomData.name);
-                break;
-            case '':
-                //setPubImage();
-                setPubImageOptions([])
-                setPubBaseDesign();
-                break;
-            default:
-                const tedData = pubBaseDesigns.find((design) => design.type === 'teddy');
-                setPubImageOptions([
-                    tedData,
-                    ...extraPubImages
-                ])
-                setPubBaseDesign(tedData.name);
-                break;
-        }
-        setBaseDesign(input);
-    }
 
     const handleSubmit = async(event) => {
     try {
@@ -462,7 +428,7 @@ export default function MintForm() {
                     eyewear: eyewear || null,
                     pub_url: pubImage,
                     dao_value: daoValue,
-                    "1of1": 0
+                    "1of1": 1
                   }
                 },
               },
@@ -509,8 +475,8 @@ export default function MintForm() {
           if (body) params.append('body', body.trim());
           if (eyewear) params.append('eyewear', eyewear.trim());
           params.append('pub_url', pubImage.trim());
-          params.append('dao_value', daoValue.trim());
-          params.append('1of1', 0);
+          params.append('dao_value', daoValue);
+          params.append('1of1', 1);
 
         const response = await toast.promise(
             axios.post(
@@ -554,8 +520,6 @@ export default function MintForm() {
             />
             <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
           </Form.Group>
-    
-          <BaseDesignSelect baseDesign={baseDesign} setBaseDesign={changeBaseDesign}/>
         </Row>
 
         
@@ -573,7 +537,7 @@ export default function MintForm() {
               type="text"
               placeholder="21"
               value={daoValue}
-              onChange={e => setDaoValue(e.target.value)}
+              disabled={true}
             />
             <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
         </Form.Group>
@@ -602,12 +566,21 @@ export default function MintForm() {
             <Image src={pubImage} fluid style={{height: "300px"}}/>
         :
             <p>
-                Select a Base Design and Public Image
+                Enter an Image URL
             </p>
         }
         <br/><br/>
-        <PubImageSelect value={pubImage} set={setPubImage} options={pubImageOptions} />
-        <em>Available options are based on Base Design.</em>
+        <Form.Group as={Col} md="12" controlId="validationCustom01">
+            <Form.Label>Public Image URL</Form.Label>
+            <Form.Control
+              required
+              type="text"
+              placeholder="https://arweave.net/..."
+              value={pubImage}
+              onChange={e => setPubImage(e.target.value)}
+            />
+            <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
+        </Form.Group>
     </div>
 
     <div>
