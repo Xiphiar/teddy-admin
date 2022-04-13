@@ -12,10 +12,24 @@ const Menu = () => {
           <b>MTC Admin Dashboard</b>
         </Link>
         <Nav>
-          <ul className="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+          <ul className="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0" style={{marginRight: "15px"}}>
             <li>
               <Link to="/goldticket" className="nav-link px-2 link-secondary">
                 Mint Golden Ticket
+              </Link>
+            </li>
+          </ul>
+          <ul className="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0" style={{marginRight: "15px"}}>
+            <li>
+              <Link to="/minttrait" className="nav-link px-2 link-secondary">
+                Mint 1/1 Trait
+              </Link>
+            </li>
+          </ul>
+          <ul className="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+            <li>
+              <Link to="/mint" className="nav-link px-2 link-secondary">
+                Mint Teddy
               </Link>
             </li>
           </ul>

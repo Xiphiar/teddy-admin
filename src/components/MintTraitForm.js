@@ -555,7 +555,7 @@ export default function MintTraitForm() {
             Loading...
             </Button>
         :
-            <Button type="submit" disabled={loading}>Mint Teddy</Button>
+            <Button type="submit" disabled={loading}>Mint Trait</Button>
         }
       </Form>
     </Col>
