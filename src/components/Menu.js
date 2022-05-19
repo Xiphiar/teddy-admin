@@ -14,6 +14,13 @@ const Menu = () => {
         <Nav>
           <ul className="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0" style={{marginRight: "15px"}}>
             <li>
+              <Link to="/factory" className="nav-link px-2 link-secondary">
+                Factory
+              </Link>
+            </li>
+          </ul>
+          <ul className="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0" style={{marginRight: "15px"}}>
+            <li>
               <Link to="/goldticket" className="nav-link px-2 link-secondary">
                 Mint Golden Ticket
               </Link>

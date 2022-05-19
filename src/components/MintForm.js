@@ -1,6 +1,6 @@
-import { SecretNetworkClient } from "secretjs";
+import { MsgExecuteContract, SecretNetworkClient } from "secretjs";
 
-import React, {useCallback, useState} from 'react'
+import React, {useCallback, useState, useEffect} from 'react'
 import {useDropzone} from 'react-dropzone'
 
 import { toast } from 'react-toastify';
@@ -204,10 +204,13 @@ const eyewears = [
     'What do you call a fish with one eye?',
 ]
 
-export default function MintForm() {
+export default function MintForm({order}) {
     const [loading, setLoading] = useState(false);
 
     const [teddyId, setTeddyId] = useState("");
+    const [teddyName, setTeddyName] = useState(order.name || '')
+    const [recipient, setRecipient] = useState(order.owner || '')
+
     const [pubImage, setPubImage] = useState();
     const [pubImageOptions, setPubImageOptions] = useState([]);
     const [privFile, setPrivFile] = useState();
@@ -215,13 +218,23 @@ export default function MintForm() {
     const [pubBaseDesign, setPubBaseDesign] = useState();
     const [daoValue, setDaoValue] = useState("");
 
-    const [face, setFace] = useState();
-    const [color, setColor] = useState();
-    const [background, setBackground] = useState();
-    const [hand, setHand] = useState();
-    const [head, setHead] = useState();
-    const [body, setBody] = useState();
-    const [eyewear, setEyewear] = useState();
+    const [face, setFace] = useState(order?.final_face);
+    const [color, setColor] = useState(order?.final_color);
+    const [background, setBackground] = useState(order?.final_background);
+    const [hand, setHand] = useState(order?.final_hand);
+    const [head, setHead] = useState(order?.final_head);
+    const [body, setBody] = useState(order?.final_body);
+    const [eyewear, setEyewear] = useState(order?.final_eyewear);
+
+    useEffect(()=>{
+        if (order){
+            console.log(order);
+            changeBaseDesign(order.final_base)
+            setPubImage(extraPubImages.find(v=>v.name==='Factory').url)
+        }
+    },[order])
+
+
 
     const errorToast = (message = 'Error occured, please check the console.') => {
         setLoading(false);
@@ -383,7 +396,7 @@ export default function MintForm() {
                 token_id:teddyId.toString().trim(),
                 public_metadata: {
                     extension: {
-                        name: teddyId.toString().trim(),
+                        name: teddyName.toString().trim() || teddyId.toString().trim(),
                         attributes: pubAttributes,
                         image: pubImage,
                     }
@@ -391,7 +404,7 @@ export default function MintForm() {
                 private_metadata: {
                     extension: {
                         attributes: privAttributes,
-                        name: teddyId.toString().trim(),
+                        name: teddyName.toString().trim() || teddyId.toString().trim(),
                         media: [{
                             authentication: {key: key},
                             extension: 'png',
@@ -403,33 +416,62 @@ export default function MintForm() {
             }
         } 
 
-        // debug logging
-        console.log("TX Info: ",{
+        const mintTx = new MsgExecuteContract({
             sender: myAddress,
-            contract: process.env.REACT_APP_NFT_ADDRESS,
-            codeHash: process.env.REACT_APP_NFT_HASH,
-            msg: mintMsg,
+            contractAddress: process.env.REACT_APP_NFT_ADDRESS,
+            codeHash: process.env.REACT_APP_NFT_HASH, // optional but way faster
+            msg: mintMsg
         })
 
-        // execute contract
-        const txToast = toast.loading("Transaction Pending...")
-        const tx = await secretjs.tx.compute.executeContract(
-            {
-            sender: myAddress,
-            contract: process.env.REACT_APP_NFT_ADDRESS,
-            codeHash: process.env.REACT_APP_NFT_HASH, // optional but way faster
-            msg: mintMsg,
-            },
-            {
-            gasLimit: 100_000,
-            },
-        ).catch(e=> toast.update(txToast, { render: "Transaction Failed", type: "error", isLoading: false, autoClose: 5000 }) );
-        console.log(tx)
+        // debug logging
+        console.log("TX Info: ",mintTx)
 
-        if (tx.code) {
-            toast.update(txToast, { render: "Transaction Failed", type: "error", isLoading: false, autoClose: 5000 });
-            throw new Error(tx.rawLog)
-        }
+        //prepare xfer TX
+        const xferTx = new MsgExecuteContract({
+            sender: myAddress,
+            contractAddress: process.env.REACT_APP_NFT_ADDRESS,
+            codeHash: process.env.REACT_APP_NFT_HASH, // optional but way faster
+            msg: {
+                transfer_nft: {
+                    recipient: recipient,
+                    token_id: teddyId.toString().trim()
+                }
+            }
+        })
+
+        //pprepare burn TX
+        const burnTx = new MsgExecuteContract({
+            sender: myAddress,
+            contractAddress: process.env.REACT_APP_NFT_ADDRESS,
+            codeHash: process.env.REACT_APP_NFT_HASH, // optional but way faster
+            msg: {
+                batch_transfer_nft: {
+                    transfers: [
+                        {
+                            recipient: process.env.REACT_APP_MT_DOOM_ADDR,
+                            token_ids: [order.teddy1, order.teddy2, order.teddy3]
+                        }
+                    ]
+
+                }
+            }
+        })
+
+
+        // execute TXs
+        const txToast = toast.loading("Transaction Pending...")
+        // const tx = await secretjs.tx.broadcast([mintTx, xferTx, burnTx],
+        //     {
+        //         gasLimit: 200_000,
+        //     },
+        // ).catch(e=> toast.update(txToast, { render: "Transaction Failed", type: "error", isLoading: false, autoClose: 5000 }) );
+
+        // console.log('*TX*',tx)
+
+        // if (tx.code) {
+        //     toast.update(txToast, { render: "Transaction Failed", type: "error", isLoading: false, autoClose: 5000 });
+        //     throw new Error(tx.rawLog)
+        // }
 
         toast.update(txToast, { render: "Transaction Processed", type: "success", isLoading: false, autoClose: 5000 });
 
@@ -462,14 +504,18 @@ export default function MintForm() {
                     eyewear: eyewear || null,
                     pub_url: pubImage,
                     dao_value: daoValue,
-                    "1of1": 0
+                    "1of1": 0,
+                    order: {
+                        id: order.id,
+                        teddies: [order.teddy1, order.teddy2, order.teddy3]
+                    }
                   }
                 },
               },
             ],
             memo: "" // Must be empty
         }
-        console.log("Unsigned: ", permitTx)
+        console.log("Unsigned: ", JSON.stringify(permitTx,undefined,2))
 
         const signature = await tryNTimes({
             times: 3,
@@ -511,6 +557,7 @@ export default function MintForm() {
           params.append('pub_url', pubImage.trim());
           params.append('dao_value', daoValue.trim());
           params.append('1of1', 0);
+          params.append('order', JSON.stringify(order));
 
         const response = await toast.promise(
             axios.post(
@@ -537,11 +584,26 @@ export default function MintForm() {
         alert(`${err}\n\nIf you think a teddy was minted, or are unsure if one was, please contact Xiphiar.\nOtherwise you can try again.\nInclude any information in the console (press F12, do not refresh the page)`)
     }
     };
-  
+
+
+  console.log('render form')
     return (
     <Row>
     <Col md="6">
-      <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit}>
+        <Row className="mb-3">
+            <Form.Group as={Col} md="12" controlId="validationCustom01">
+                <Form.Label>Recipient</Form.Label>
+                <Form.Control
+                type="text"
+                placeholder=""
+                value={recipient}
+                disabled={true}
+                onChange={e => setRecipient(e.target.value)}
+                />
+                <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
+            </Form.Group>
+        </Row>
         <Row className="mb-3">
           <Form.Group as={Col} md="4" controlId="validationCustom01">
             <Form.Label>New ID</Form.Label>
@@ -557,6 +619,21 @@ export default function MintForm() {
     
           <BaseDesignSelect baseDesign={baseDesign} setBaseDesign={changeBaseDesign}/>
         </Row>
+        <Row className="mb-3">
+            <Form.Group as={Col} md="8" controlId="validationCustom01">
+                <Form.Label>Teddy Name</Form.Label>
+                <Form.Control
+                type="text"
+                placeholder=""
+                value={teddyName}
+                //disabled={true}
+                onChange={e => setTeddyName(e.target.value)}
+                />
+                <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
+            </Form.Group>
+        </Row>
+
+
 
         
         <TraitSelect value={face} set={setFace} label="Facial Expression" options={faces}/>

@@ -14,7 +14,7 @@ import NotFound from "./pages/NotFound";
 import Mint from "./pages/Mint";
 import GoldToken from "./pages/GoldToken";
 import MintTrait from "./pages/MintTrait";
-
+import Factory from "./pages/Factory";
 
 
 
@@ -38,6 +38,7 @@ const App = () => {
           <Route path="/mint" element={<Mint />} />
           <Route path="/minttrait" element={<MintTrait />} />
           <Route path="/goldticket" element={<GoldToken />} />
+          <Route path="/factory" element={<Factory />} />
           <Route element={<NotFound />} />
         </Routes>
       </Container>

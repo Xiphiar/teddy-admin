@@ -373,7 +373,7 @@ export default function MintTraitForm() {
         const tx = await secretjs.tx.compute.executeContract(
             {
             sender: myAddress,
-            contract: process.env.REACT_APP_NFT_ADDRESS,
+            contractAddress: process.env.REACT_APP_NFT_ADDRESS,
             codeHash: process.env.REACT_APP_NFT_HASH, // optional but way faster
             msg: mintMsg,
             },
