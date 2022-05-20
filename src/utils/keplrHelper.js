@@ -129,6 +129,47 @@ async function getPermit(address){
   return signature;
 }
 
+async function getOrdersPermit(address, permitName, allowedDestinations){
+    const storageKey = `orders-permit-v1-${address}`
+    let data = myStorage.getItem(storageKey);
+    if (data) { return JSON.parse(data); }
+
+    const chainId = process.env.REACT_APP_CHAIN_ID;
+    window.keplr.enable(chainId);
+
+    const permitTx = {
+        chain_id: process.env.REACT_APP_CHAIN_ID,
+        account_number: "0", // Must be 0
+        sequence: "0", // Must be 0
+        fee: {
+            amount: [{ denom: "uscrt", amount: "0" }], // Must be 0 uscrt
+            gas: "1", // Must be 1
+        },
+        msgs: [
+            {
+                type: "get_orders", // Must be "query_permit"
+                value: {
+                    permit_name: permitName,
+                    allowed_destinations: allowedDestinations,
+                },
+            },
+        ],
+        memo: "" // Must be empty
+    }
+
+    const { signature } = await window.keplr.signAmino(
+        chainId,
+        address,
+        permitTx,
+        {
+            preferNoSetFee: true, // Fee must be 0, so hide it from the user
+            preferNoSetMemo: true, // Memo must be empty, so hide it from the user
+        }
+    );
+    myStorage.setItem(storageKey, JSON.stringify(signature));
+    return signature;
+}
+
 const getAddress = async() => {
   const chainID = getChainId();
   const offlineSigner = window.getOfflineSigner(chainID);
@@ -189,4 +230,4 @@ function countDecimals(value) {
     return value.toString().split(".")[1]?.length || 0; 
 }
 
-export { getPermit, isValidAddress, countDecimals, getAddress, permitName, allowedTokens, permissions, permitQuery, getChainId, getApiURL }
+export { getPermit, getOrdersPermit, isValidAddress, countDecimals, getAddress, permitName, allowedTokens, permissions, permitQuery, getChainId, getApiURL }

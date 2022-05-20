@@ -7,9 +7,14 @@ import Button from 'react-bootstrap/Button'
 import OrderModal from '../components/OrderModal'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import { getOrdersPermit } from '../utils/keplrHelper'
+import { toast } from 'react-toastify'
+import { Spinner } from 'react-bootstrap'
 
 const permitName = "MTC-Factory";
 const allowedDestinations = ["teddyapi.xiphiar.com", "localhost:9176", 'teddyapi-testnet.xiphiar.com'];
+
+const sleep = duration => new Promise(res => setTimeout(res, duration));
 
 const Factory = () => {
   const [loading, setLoading] = useState(true)
@@ -35,47 +40,24 @@ const Factory = () => {
     try{
         setLoading(true);
 
-        // if (!window.keplr){
-        //     alert ("Please install Keplr extension.")
-        //     setLoading(false);
-        //     return;
-        // }
+        //wait for keplr to load before continuing
+        let tries = 0
+        while (tries < 3){
+          if (window.keplr) break;
+          await sleep(1000)
+          tries++
+        }
 
+        if (!window.keplr){
+            toast.error('Keplr not found.')
+            setLoading(false);
+            return;
+        }
         await window.keplr.enable(process.env.REACT_APP_CHAIN_ID);
-        
         const keplrOfflineSigner = window.getOfflineSignerOnlyAmino(process.env.REACT_APP_CHAIN_ID);
         const [{ address: myAddress }] = await keplrOfflineSigner.getAccounts();
 
-        //sign permit
-        const permitTx = {
-            chain_id: process.env.REACT_APP_CHAIN_ID,
-            account_number: "0", // Must be 0
-            sequence: "0", // Must be 0
-            fee: {
-              amount: [{ denom: "uscrt", amount: "0" }], // Must be 0 uscrt
-              gas: "1", // Must be 1
-            },
-            msgs: [
-              {
-                type: "get_orders", // Must be "query_permit"
-                value: {
-                  permit_name: permitName,
-                  allowed_destinations: allowedDestinations,
-                },
-              },
-            ],
-            memo: "" // Must be empty
-        }
-
-        const { signature } = await window.keplr.signAmino(
-            process.env.REACT_APP_CHAIN_ID,
-            myAddress,
-            permitTx,
-            {
-              preferNoSetFee: true, // Fee must be 0, so hide it from the user
-              preferNoSetMemo: true, // Memo must be empty, so hide it from the user
-            }
-        );
+        const signature = await getOrdersPermit(myAddress, permitName, allowedDestinations)
 
         var params = new URLSearchParams();
           params.append('permit_name', permitName);
@@ -90,23 +72,12 @@ const Factory = () => {
         console.log(response.data);
         setOrders(response.data.orders);
         setLoading(false)
-        //alert(`Success: ${response.data.message}`)
 
-
-        /*
-        const form = event.currentTarget;
-        if (form.checkValidity() === false) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-  
-        setValidated(true);
-        */
     } catch(err) {
+        console.error(err)
         console.error(err.response?.data?.message || err.message || err);
         alert(err.response?.data?.message || err.message || err);
         setLoading(false);
-        //throw err.response.statusText;
     }
     };
 
@@ -139,6 +110,11 @@ const Factory = () => {
             })}
           </tbody>
         </Table>
+        { loading ?
+        <div className='text-center'>
+          <Spinner animation="border" variant="primary" />
+        </div>
+        : null }
         </Col>
       </Row>
     </div>

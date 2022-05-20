@@ -1,6 +1,7 @@
 import { MsgExecuteContract, SecretNetworkClient } from "secretjs";
 
 import React, {useCallback, useState, useEffect} from 'react'
+import { useNavigate } from 'react-router-dom'
 import {useDropzone} from 'react-dropzone'
 
 import { toast } from 'react-toastify';
@@ -225,6 +226,8 @@ export default function MintForm({order}) {
     const [head, setHead] = useState(order?.final_head);
     const [body, setBody] = useState(order?.final_body);
     const [eyewear, setEyewear] = useState(order?.final_eyewear);
+
+    let navigate = useNavigate();
 
     useEffect(()=>{
         if (order){
@@ -577,6 +580,7 @@ export default function MintForm({order}) {
 
         setLoading(false)
         alert(`Success: ${response.data.message}`)
+        navigate('/factory')
     } catch(err) {
         errorToast();
         console.error(err);
