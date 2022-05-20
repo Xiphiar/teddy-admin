@@ -460,18 +460,18 @@ export default function MintForm({order}) {
 
         // execute TXs
         const txToast = toast.loading("Transaction Pending...")
-        // const tx = await secretjs.tx.broadcast([mintTx, xferTx, burnTx],
-        //     {
-        //         gasLimit: 200_000,
-        //     },
-        // ).catch(e=> toast.update(txToast, { render: "Transaction Failed", type: "error", isLoading: false, autoClose: 5000 }) );
+        const tx = await secretjs.tx.broadcast([mintTx, xferTx, burnTx],
+            {
+                gasLimit: 200_000,
+            },
+        ).catch(e=> toast.update(txToast, { render: "Transaction Failed", type: "error", isLoading: false, autoClose: 5000 }) );
 
-        // console.log('*TX*',tx)
+        console.log('*TX*',tx)
 
-        // if (tx.code) {
-        //     toast.update(txToast, { render: "Transaction Failed", type: "error", isLoading: false, autoClose: 5000 });
-        //     throw new Error(tx.rawLog)
-        // }
+        if (tx.code) {
+            toast.update(txToast, { render: "Transaction Failed", type: "error", isLoading: false, autoClose: 5000 });
+            throw new Error(tx.rawLog)
+        }
 
         toast.update(txToast, { render: "Transaction Processed", type: "success", isLoading: false, autoClose: 5000 });
 
