@@ -221,41 +221,51 @@ const queryTokenHistory = async(client, address, permit) => {
         page_size: 300
       }
   }
-try {
-  const chainId = getChainId();
-  if (permit.signature){
-      const query2 = new permitQuery(query, permit, chainId);
-      //const data = await client.queryContractSmart(process.env.REACT_APP_CONTRACT_ADDRESS, query2, {}, process.env.REACT_APP_CONTRACT_CODE_HASH);
-      const data = await client.query.compute.queryContract({
-        contractAddress: process.env.REACT_APP_NFT_ADDRESS,
-        codeHash: process.env.REACT_APP_NFT_HASH,
-        query: query2,
+  try {
+    const chainId = getChainId();
+    if (!permit.signature) throw new Error('Permit not provided for history query.')
 
-      })
-      return data.transaction_history.txs;
-      
-  } else {
-    console.log("no permit query")
-    //let data = await client.queryContractSmart(process.env.REACT_APP_CONTRACT_ADDRESS, query, {}, process.env.REACT_APP_CONTRACT_CODE_HASH);
-    let data = await client.query.compute.queryContract({
+    const query2 = new permitQuery(query, permit, chainId);
+
+    const data = await client.query.compute.queryContract({
       contractAddress: process.env.REACT_APP_NFT_ADDRESS,
       codeHash: process.env.REACT_APP_NFT_HASH,
-      query: query
+      query: query2,
     })
-      let attributes = {};
-      let unknown = "";
-      if (data.nft_dossier.public_metadata.extension.attributes.length===1) unknown = "?"
-      for (let i = 0; i < data.nft_dossier.public_metadata.extension.attributes.length; i++) {
-          attributes[data.nft_dossier.public_metadata.extension.attributes[i].trait_type] = data.nft_dossier.public_metadata.extension.attributes[i].value + unknown;
-        }
-      return({
-          nft_dossier: data.nft_dossier,
-          pub_attributes: attributes
-      });
+    
+    return data.transaction_history.txs;
+      
+  } catch(error) {
+    console.error(error)
+    throw error;
   }
-} catch(error) {
-  console.error(error)
 }
+
+const queryGoldTokenHistory = async(client, address, permit) => {
+  const query = {
+      transaction_history: {
+        address: address,
+        page_size: 300
+      }
+  }
+  try {
+    const chainId = getChainId();
+    if (!permit.signature) throw new Error('Permit not provided for history query.')
+
+    const query2 = new permitQuery(query, permit, chainId);
+
+    const data = await client.query.compute.queryContract({
+      contractAddress: process.env.REACT_APP_TICKET_ADDRESS,
+      codeHash: process.env.REACT_APP_TICKET_HASH,
+      query: query2,
+    })
+
+    return data.transaction_history.txs;
+
+  } catch(error) {
+    console.error(error)
+    throw error;
+  }
 }
 
 const batchQueryTokenMetadata = async(client, ids, permit) => {
@@ -336,4 +346,4 @@ const blobToBase64 = (blob) => {
   });
 }
 
-export { decryptFile, getRarityData, queryOwnedTokens,queryTokenHistory, queryOwnedTickets, queryTokenMetadata, batchQueryTokenMetadata, processRarity, getTotalTokens, verifydiscord, getPublicTeddyData, truncate, cachePrivateImage, cachePublicImage, getPrivateImage, getKnownImage, blobToBase64 };
+export { decryptFile, getRarityData, queryOwnedTokens,queryTokenHistory, queryGoldTokenHistory, queryOwnedTickets, queryTokenMetadata, batchQueryTokenMetadata, processRarity, getTotalTokens, verifydiscord, getPublicTeddyData, truncate, cachePrivateImage, cachePublicImage, getPrivateImage, getKnownImage, blobToBase64 };

@@ -8,7 +8,7 @@ import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 
 import { getPermit } from "../utils/keplrHelper";
-import { queryTokenHistory, queryTokenMetadata } from '../utils/dataHelper'
+import { queryTokenHistory, queryGoldTokenHistory, queryTokenMetadata } from '../utils/dataHelper'
 import { SecretNetworkClient } from 'secretjs';
 import { Spinner } from 'react-bootstrap';
 import FactoryTeddyCard from './FactoryTeddyCard'
@@ -106,15 +106,19 @@ export default function OrderModal(props){
 
             const ids = [order.teddy1.toString(),order.teddy2.toString(),order.teddy3.toString()]
 
+        //--- verify tx hash ---//
             setLoading('Verifying Transaction...');
-            // verify tx hash
+            
             const tx = await queryJs.query.getTx(order.tx_hash);
             console.log('*TX*', tx)
             if (tx.code) throw new Error('TX for given hash failed, this shouldnt happen...')
 
             const height = tx.height;
 
-            setLoading('Verifying Token Transfers...');
+            
+
+        //--- Verify Teddy Transfers ---//
+            setLoading('Verifying Teddy Transfers...');
 
             //get teddy xfer history
             const data = await queryTokenHistory(queryJs, walletAddress, signature)
@@ -129,7 +133,7 @@ export default function OrderModal(props){
             const teddy2xfer = xfersAtHeight.find(v=>v.token_id===ids[1])
             const teddy3xfer = xfersAtHeight.find(v=>v.token_id===ids[2])
             if (!teddy1xfer || !teddy2xfer || !teddy3xfer){
-                if (tx.code) throw new Error('Teddies didnt appear to be transfered on that TX, this shouldnt happen...')
+                throw new Error('Teddies didnt appear to be transfered on that TX, this shouldnt happen...')
             }
             console.log('*TEDDY XFERS*', teddy1xfer, teddy2xfer, teddy3xfer)
 
@@ -145,12 +149,43 @@ export default function OrderModal(props){
             if (!teddy2xfer.action.transfer.from===order.owner) throw new Error(`Teddy doesnt appear to have been transfered from the owner address. This shouldn't happen...`)
             if (!teddy3xfer.action.transfer.from===order.owner) throw new Error(`Teddy doesnt appear to have been transfered from the owner address. This shouldn't happen...`)
 
+        //--- Verify Payment ---//
+            if (order.goldToken) {
+                setLoading('Verifying Gold Token Transfer...');
 
+                //get token xfer history
+                const gtData = await queryGoldTokenHistory(queryJs, walletAddress, signature)
+                console.log('*GT HISTORY*',gtData)
+
+                // get xfers at tx height
+                const gtXfersAtHeight = gtData.filter(v=>v.block_height===height);
+                console.log('*GT XFERS AT TX HEIGHT*', gtXfersAtHeight)
+
+                //find transfers for Gold Token ID in this order
+                const gtXfer = gtXfersAtHeight.find(v=>v.token_id===order.goldToken)
+
+                if (!gtXfer){
+                    throw new Error('Gold Token didnt appear to be transfered on that TX, this shouldnt happen...')
+                }
+                console.log('*GT XFER*', gtXfer)
+
+                //verify connected wallet was recipient
+                console.log("*Current Addr*", walletAddress)
+                if (gtXfer.action.transfer?.recipient!==walletAddress) throw new Error('You dont appear to be the recipient of the gold token transfer. Are you connected with the admin wallet?')
+
+                // verify previous owner is getting the new teddy
+                setLoading('Verifying Previous Owner...');
+                if (!gtXfer.action.transfer.from===order.owner) throw new Error(`Gold Token doesnt appear to have been transfered from the owner address. This shouldn't happen...`)
+            } else {
+                setLoading('Verifying sSCRT Payment...');
+
+            }
+
+        //--- proceed to mint ---//
             setLoading('OK!');
             console.log('OK')
-
-            //proceed to mint
             navigate('/mint',{state: {order: order}})
+
         } catch(e) {
             console.error(e)
             alert(`Failed to verify order! Are connected with the Admin wallet?\nError: ${e}`)
@@ -216,6 +251,10 @@ export default function OrderModal(props){
                                 <span style={{fontWeight: "bold"}}>Teddy IDs</span><br/>
                                 <span style={{fontSize: "16px"}}>{order?.teddy1}&nbsp;&nbsp;&nbsp;{order?.teddy2}&nbsp;&nbsp;&nbsp;{order?.teddy3}</span><br/>
                                 { !view ? <Button onClick={() => viewTeddies()}>View</Button> : null }
+                            </Col>
+                            <Col>
+                                <span style={{fontWeight: "bold"}}>Payment Method</span><br/>
+                                <span style={{fontSize: "16px"}}>{order?.goldToken ? `Gold Token #${order?.goldToken}` : `sSCRT`}</span><br/>
                             </Col>
                             <Col>
                                 <span style={{fontWeight: "bold"}}>TX Hash</span><br/>

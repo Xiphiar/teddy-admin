@@ -1,7 +1,7 @@
 import { Bech32 } from "@iov/encoding";
 
 const permitName = "midnightteddy.club";
-const allowedTokens = [process.env.REACT_APP_NFT_ADDRESS];
+const allowedTokens = [process.env.REACT_APP_NFT_ADDRESS,process.env.REACT_APP_TICKET_ADDRESS];
 const permissions = ["owner" /* , "history", "allowance" */];
 
 let myStorage = window.sessionStorage;
@@ -89,7 +89,7 @@ async function suggestTestnet() {
 }
 
 async function getPermit(address){
-  let data = myStorage.getItem(`teddy-permit-2-${process.env.REACT_APP_CONTRACT_ADDRESS}-${address}`);
+  let data = myStorage.getItem(`teddy-admin-permit-1-nft:${process.env.REACT_APP_CONTRACT_ADDRESS}-goldToken:${process.env.REACT_APP_TICKET_ADDRESS}-${address}`);
   if (data) { return JSON.parse(data); }
 
 
