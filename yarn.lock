@@ -9185,10 +9185,10 @@ prop-types@^15.8.1:
     object-assign "^4.1.1"
     react-is "^16.13.1"
 
-protobufjs@6.11.2:
-  version "6.11.2"
-  resolved "https://registry.yarnpkg.com/protobufjs/-/protobufjs-6.11.2.tgz#de39fabd4ed32beaa08e9bb1e30d08544c1edf8b"
-  integrity sha512-4BQJoPooKJl2G9j3XftkIXjoC9C0Av2NOrWmbLWT1vH32GcSUHjM0Arra6UfTsVyfMAuFzaLucXn1sadxJydAw==
+protobufjs@6.11.3:
+  version "6.11.3"
+  resolved "https://registry.yarnpkg.com/protobufjs/-/protobufjs-6.11.3.tgz#637a527205a35caa4f3e2a9a4a13ddffe0e7af74"
+  integrity sha512-xL96WDdCZYdU7Slin569tFX712BxsxslWwAfAhCYjQKGTq7dAU91Lomy6nLLhh/dyGhk/YH4TwTSRxTzhuHyZg==
   dependencies:
     "@protobufjs/aspromise" "^1.1.2"
     "@protobufjs/base64" "^1.1.2"
@@ -10142,10 +10142,10 @@ schema-utils@^3.0.0:
     ajv "^6.12.5"
     ajv-keywords "^3.5.2"
 
-secretjs@^1.3.0-beta.1:
-  version "1.3.0-beta.1"
-  resolved "https://registry.yarnpkg.com/secretjs/-/secretjs-1.3.0-beta.1.tgz#a432082f8e1d582997a4d09abd47be6688db7d88"
-  integrity sha512-g0NgleCWvKKzQg3uFygbV8S39VXTXHHzENdCjtp/PrMHB1aXA64hEMUjcZTJrXyLEe1NC2gTZksPnYgAhFA/vg==
+secretjs@^1.3.0-beta.5:
+  version "1.3.0-beta.5"
+  resolved "https://registry.yarnpkg.com/secretjs/-/secretjs-1.3.0-beta.5.tgz#ca60dd3597785efc714b4c23c3e6aaee42bbb499"
+  integrity sha512-b90e3EktAmU7NjLPgRNuDDBDh7JMLdOZG/RaxCg7WhjNmWGxOmC8CyQezEzd3u1/cAvARWf29J1J6XenQOKkuw==
   dependencies:
     "@cosmjs/encoding" "0.27.1"
     "@cosmjs/math" "0.27.1"
@@ -10161,7 +10161,7 @@ secretjs@^1.3.0-beta.1:
     is-gzip "2.0.0"
     miscreant "0.3.2"
     pako "2.0.4"
-    protobufjs "6.11.2"
+    protobufjs "6.11.3"
     secure-random "1.1.2"
 
 secure-random@1.1.2:

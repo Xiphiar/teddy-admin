@@ -178,6 +178,20 @@ export default function OrderModal(props){
                 if (!gtXfer.action.transfer.from===order.owner) throw new Error(`Gold Token doesnt appear to have been transfered from the owner address. This shouldn't happen...`)
             } else {
                 setLoading('Verifying sSCRT Payment...');
+                let vkey;
+                //get viewing key
+                try {
+                    vkey = await window.keplr.getSecret20ViewingKey(process.env.REACT_APP_CHAIN_ID, process.env.REACT_APP_TOKEN_ADDRESS)
+                    console.log(vkey)
+                } catch(error) {
+                    if (error.toString().includes('There is no matched secret20'))
+                        alert(`Error Verifying sSCRT Payment:\nsSCRT view key not found.\n\nPlease add token:\n${process.env.REACT_APP_TOKEN_ADDRESS}\n\nwith the view key provided by Xiphiar for chain:\n${process.env.REACT_APP_CHAIN_ID}`)
+                    else
+                        alert(`Unknown Error Getting View Key:\n${error}`)
+                    
+                    setLoading(false);
+                    return;
+                }
 
             }
 
