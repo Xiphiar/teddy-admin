@@ -1,5 +1,6 @@
 import React, {useState,useEffect} from 'react';
 import { useNavigate } from "react-router-dom";
+import { grpc } from "@improbable-eng/grpc-web";
 
 import Modal from 'react-bootstrap/Modal'
 import Button from 'react-bootstrap/Button'
@@ -182,7 +183,7 @@ export default function OrderModal(props){
                 //get viewing key
                 try {
                     vkey = await window.keplr.getSecret20ViewingKey(process.env.REACT_APP_CHAIN_ID, process.env.REACT_APP_TOKEN_ADDRESS)
-                    console.log(vkey)
+                    console.log('*VIEW KEY*',vkey)
                 } catch(error) {
                     if (error.toString().includes('There is no matched secret20'))
                         alert(`Error Verifying sSCRT Payment:\nsSCRT view key not found.\n\nPlease add token:\n${process.env.REACT_APP_TOKEN_ADDRESS}\n\nwith the view key provided by Xiphiar for chain:\n${process.env.REACT_APP_CHAIN_ID}`)
@@ -193,12 +194,69 @@ export default function OrderModal(props){
                     return;
                 }
 
+                try {
+                    const balanceQuery = {
+                        balance: {
+                            address: walletAddress,
+                            key: vkey
+                        }
+                    }
+
+                    
+                    const { balance: currentBalance } = await queryJs.query.compute.queryContract({
+                        contractAddress: process.env.REACT_APP_TOKEN_ADDRESS,
+                        codeHash: process.env.REACT_APP_TOKEN_HASH, // optional but way faster
+                        query: balanceQuery,
+                      }
+                    );
+                    console.log('Current Balance',parseInt(currentBalance.amount)/10e5);
+
+                    const { balance: heightBalance } = await queryJs.query.compute.queryContract({
+                        contractAddress: process.env.REACT_APP_TOKEN_ADDRESS,
+                        codeHash: process.env.REACT_APP_TOKEN_HASH, // optional but way faster
+                        query: balanceQuery,
+                      },
+                      new grpc.Metadata({"x-cosmos-block-height": height.toString()})
+                    );
+
+                    const { balance: previousBalance } = await queryJs.query.compute.queryContract({
+                        contractAddress: process.env.REACT_APP_TOKEN_ADDRESS,
+                        codeHash: process.env.REACT_APP_TOKEN_HASH, // optional but way faster
+                        query: balanceQuery,
+                      },
+                      new grpc.Metadata({"x-cosmos-block-height": (parseInt(height)-1).toString()})
+                    );
+
+                    const diff = parseInt(heightBalance.amount)-parseInt(previousBalance.amount);
+                    console.log('Difference:', diff);
+
+                    if (diff !== 5000000) throw new Error(`Invalid payment amount. Expected 5000000uSSCRT, received ${diff} uSSCRT`)
+
+                    // const result = await queryJs.query.bank.balance(
+                    //     {
+                    //       address: "secret1...",
+                    //       denom: "uscrt",
+                    //     },
+                    //     new grpc.Metadata({"x-cosmos-block-height": "2000000"})
+                    //   );
+                    
+                    //   console.log(result);
+                    
+                } catch(error) {
+                    alert(`Error Verifying sSCRT Payment:\n${error}`)
+                    
+                    setLoading(false);
+                    return;
+                }
+
             }
 
         //--- proceed to mint ---//
             setLoading('OK!');
-            console.log('OK')
-            navigate('/mint',{state: {order: order}})
+            console.log('OK');
+
+            setLoading(false); // navigate('/mint',{state: {order: order}})
+            
 
         } catch(e) {
             console.error(e)
