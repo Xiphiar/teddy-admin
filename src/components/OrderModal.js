@@ -34,6 +34,7 @@ export default function OrderModal(props){
     const [view, setView] = useState(false);
     const [teddyData, setTeddyData] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [verified, setVerified] = useState(false);
     //const [history, setHistory] = useState();
     let navigate = useNavigate();
 
@@ -99,7 +100,7 @@ export default function OrderModal(props){
 
     }
 
-    const handleMint = async() => {
+    const handleVerify = async() => {
         try {
             setLoading('Getting Permit...');
             await setupQueryJs();
@@ -241,7 +242,7 @@ export default function OrderModal(props){
                     //   );
                     
                     //   console.log(result);
-                    
+
                 } catch(error) {
                     alert(`Error Verifying sSCRT Payment:\n${error}`)
                     
@@ -251,13 +252,27 @@ export default function OrderModal(props){
 
             }
 
-        //--- proceed to mint ---//
-            setLoading('OK!');
+        //--- No Errors ---//
+            setVerified(true);
+            setLoading(false);
             console.log('OK');
+            return true;
 
-            setLoading(false); // navigate('/mint',{state: {order: order}})
+        } catch(e) {
+            console.error(e)
+            alert(`Failed to verify order! Are connected with the Admin wallet?\nError: ${e}`)
+            setLoading(false);
+        }
+    }
+
+    const handleMint = async() => {
+        try {
+            let isVerified = verified;
+            if (!isVerified) isVerified = await handleVerify();
+
+        //--- proceed to mint ---//
+            if (isVerified) navigate('/mint',{state: {order: order}})
             
-
         } catch(e) {
             console.error(e)
             alert(`Failed to verify order! Are connected with the Admin wallet?\nError: ${e}`)
@@ -327,6 +342,14 @@ export default function OrderModal(props){
                             <Col>
                                 <span style={{fontWeight: "bold"}}>Payment Method</span><br/>
                                 <span style={{fontSize: "16px"}}>{order?.goldToken ? `Gold Token #${order?.goldToken}` : `sSCRT`}</span><br/>
+                                { loading ?
+                                    <>
+                                    <Button disabled={true}>Verify <Spinner animation="border" variant="light" /></Button><br/>
+                                    <span>{loading}</span>
+                                    </>
+                                :
+                                    <Button disabled={verified} onClick={() => handleVerify()}>{verified ? 'Verified ✔' : 'Verify'}</Button>
+                                }
                             </Col>
                             <Col>
                                 <span style={{fontWeight: "bold"}}>TX Hash</span><br/>
