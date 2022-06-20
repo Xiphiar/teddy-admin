@@ -232,7 +232,7 @@ const queryTokenHistory = async(client, address, permit) => {
       codeHash: process.env.REACT_APP_NFT_HASH,
       query: query2,
     })
-    
+    console.log('Query Data', data);
     return data.transaction_history.txs;
       
   } catch(error) {
