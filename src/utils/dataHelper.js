@@ -226,7 +226,7 @@ const queryTokenHistory = async(client, address, permit) => {
     if (!permit.signature) throw new Error('Permit not provided for history query.')
 
     const query2 = new permitQuery(query, permit, chainId);
-
+    console.log('Query',query);
     const data = await client.query.compute.queryContract({
       contractAddress: process.env.REACT_APP_NFT_ADDRESS,
       codeHash: process.env.REACT_APP_NFT_HASH,
