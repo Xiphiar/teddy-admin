@@ -9,7 +9,7 @@ import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 
 import { getPermit } from "../utils/keplrHelper";
-import { queryTokenHistory, queryGoldTokenHistory, queryTokenMetadata } from '../utils/dataHelper'
+import { queryTokenHistory, queryGoldTokenHistory, queryTokenMetadata, queryOwnedTickets, queryOwnedTokens } from '../utils/dataHelper'
 import { SecretNetworkClient } from 'secretjs';
 import { Spinner } from 'react-bootstrap';
 import FactoryTeddyCard from './FactoryTeddyCard'
@@ -39,11 +39,15 @@ export default function OrderModal(props){
     let navigate = useNavigate();
 
     useEffect(()=>{
-        setShow(props.show)
+        setShow(props.show);
     },[props.show])
 
     useEffect(()=>{
-        setOrder(props.order)
+        setOrder(props.order);
+        setVerified(false);
+        setTeddyData([]);
+        setLoading(false);
+        setView(false);
     },[props.order])
 
     let queryJs = undefined
@@ -105,6 +109,7 @@ export default function OrderModal(props){
             setLoading('Getting Permit...');
             await setupQueryJs();
             await setupPermit();
+            if (walletAddress !== 'secret1s7hqr22y5unhsc9r4ddnj049ltn9sa9pt55nzz') throw new Error(`You are not connected with the Admin wallet.`);
 
             const ids = [order.teddy1.toString(),order.teddy2.toString(),order.teddy3.toString()]
 
@@ -121,6 +126,15 @@ export default function OrderModal(props){
 
         //--- Verify Teddy Transfers ---//
             setLoading('Verifying Teddy Transfers...');
+
+            //get owned teddies
+            const tedInventory = await queryOwnedTokens(queryJs, walletAddress, signature);
+            console.log('*TEDDY INVENTORY*',tedInventory)
+
+            //verify connected wallet holds the teddies
+            if (!tedInventory.includes(ids[0])) throw new Error(`Admin wallet doesn't hold teddy ID ${ids[0]}. This shouldn't happen...`);
+            if (!tedInventory.includes(ids[1])) throw new Error(`Admin wallet doesn't hold teddy ID ${ids[1]}. This shouldn't happen...`);
+            if (!tedInventory.includes(ids[2])) throw new Error(`Admin wallet doesn't hold teddy ID ${ids[2]}. This shouldn't happen...`);
 
             //get teddy xfer history
             const data = await queryTokenHistory(queryJs, walletAddress, signature)
@@ -154,6 +168,13 @@ export default function OrderModal(props){
         //--- Verify Payment ---//
             if (order.goldToken) {
                 setLoading('Verifying Gold Token Transfer...');
+
+                //get owned gold tokens
+                const gtInventory = await queryOwnedTickets(queryJs, walletAddress, signature);
+                console.log('*GT INVENTORY*',gtInventory)
+
+                //verify connected wallet holds the token
+                if (!gtInventory.includes(order.goldToken)) throw new Error(`Admin wallet doesn't hold the gold token used for payment. This shouldn't happen...`)
 
                 //get token xfer history
                 const gtData = await queryGoldTokenHistory(queryJs, walletAddress, signature)

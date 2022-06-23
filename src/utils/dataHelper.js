@@ -136,10 +136,29 @@ const queryOwnedTokens = async(client, address, permit) => {
           limit: 300
         }
     }
-    const chainId = getChainId();
-    const query2 = new permitQuery(query, permit, chainId);
-    let data = await client.queryContractSmart(process.env.REACT_APP_CONTRACT_ADDRESS, query2, {}, process.env.REACT_APP_CONTRACT_CODE_HASH);
-    return data.token_list.tokens;
+    // const chainId = getChainId();
+    // const query2 = new permitQuery(query, permit, chainId);
+    // let data = await client.queryContractSmart(process.env.REACT_APP_CONTRACT_ADDRESS, query2, {}, process.env.REACT_APP_CONTRACT_CODE_HASH);
+    // return data.token_list.tokens;
+    try {
+      const chainId = getChainId();
+      if (!permit.signature) throw new Error('Permit not provided for tokens query.')
+  
+      const query2 = new permitQuery(query, permit, chainId);
+      console.log('Query',query);
+      
+      const data = await client.query.compute.queryContract({
+        contractAddress: process.env.REACT_APP_NFT_ADDRESS,
+        codeHash: process.env.REACT_APP_NFT_CODE_HASH,
+        query: query2,
+      })
+      console.log('Query Data', data);
+      return data.token_list.tokens;
+        
+    } catch(error) {
+      console.error(error)
+      throw error;
+    }
 }
 
 const queryOwnedTickets = async(client, address, permit) => {
@@ -149,10 +168,28 @@ const queryOwnedTickets = async(client, address, permit) => {
         limit: 300
       }
   }
-  const chainId = getChainId();
-  const query2 = new permitQuery(query, permit, chainId);
-  let data = await client.queryContractSmart(process.env.REACT_APP_TICKET_ADDRESS, query2, {}, process.env.REACT_APP_TICKET_CODE_HASH);
-  return data.token_list.tokens;
+  // const chainId = getChainId();
+  // const query2 = new permitQuery(query, permit, chainId);
+  // let data = await client.queryContractSmart(process.env.REACT_APP_TICKET_ADDRESS, query2, {}, process.env.REACT_APP_TICKET_CODE_HASH);
+  // return data.token_list.tokens;
+  try {
+    const chainId = getChainId();
+    if (!permit.signature) throw new Error('Permit not provided for history query.')
+
+    const query2 = new permitQuery(query, permit, chainId);
+    console.log('Query',query);
+    const data = await client.query.compute.queryContract({
+      contractAddress: process.env.REACT_APP_TICKET_ADDRESS,
+      codeHash: process.env.REACT_APP_TICKET_CODE_HASH,
+      query: query2,
+    })
+    console.log('Query Data', data);
+    return data.token_list.tokens;
+      
+  } catch(error) {
+    console.error(error)
+    throw error;
+  }
 }
 
 const queryTokenMetadata = async(client, id, permit) => {

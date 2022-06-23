@@ -329,6 +329,22 @@ export default function MintForm({order}) {
         if (!privFile) {return errorToast("No Private Image Uploaded");}
         if (!teddyId || teddyId.length>8) return errorToast("Teddy ID must be less than 8 characters.");
 
+        // validate ID is available in database
+        const {data: dbresponse} = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/teddy/${teddyId.trim()}`)
+        if (dbresponse.id) return errorToast(`ID ${teddyId} already exists in database.`);
+
+        // validate ID is Available on chain
+        const {nft_dossier} = await secretjs.query.compute.queryContract({
+            contractAddress: process.env.REACT_APP_NFT_ADDRESS,
+            codeHash: process.env.REACT_APP_NFT_HASH,
+            query: {
+                nft_dossier: {
+                    token_id: teddyId
+                }
+            }
+        })
+        if (nft_dossier)  return errorToast(`ID ${teddyId} already exists in contract.`);
+
         //encrypt file
         const encryptPromise = encryptFile(privFile);
         toast.promise(
