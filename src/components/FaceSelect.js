@@ -7,7 +7,7 @@ export default function FaceSelect({value, set}) {
     const [selected, setSelected] = useState(false)
     const [customValue, setCustomValue] = useState('')
 
-    //if (selected === "Other" && customValue) set(customValue)
+    //if (selected === "other" && customValue) set(customValue)
     return (
         <Row className="mb-3">
             <Form.Group as={Col} md="4" controlId="BaseDesignSelect">
@@ -17,7 +17,7 @@ export default function FaceSelect({value, set}) {
                     as="select"
                     value={selected}
                     onChange={e => {
-                        if (e.target.value === "Other") {
+                        if (e.target.value === "other") {
                             set(customValue)
                         } else {
                             set(e.target.value)
@@ -35,9 +35,9 @@ export default function FaceSelect({value, set}) {
                     <option>Shocked</option>
                     <option>Smug</option>
                     <option>Teddy Smile</option>
-                    <option>Other</option>
+                    <option value='other'>Other</option>
                 </Form.Control>
-                { selected === "Other" ? 
+                { selected === "other" ? 
                     <>
                         <Form.Control
                             required
