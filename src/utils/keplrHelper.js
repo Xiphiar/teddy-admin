@@ -6,6 +6,10 @@ const permissions = ["owner" /* , "history", "allowance" */];
 
 let myStorage = window.sessionStorage;
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 const customFees = {
     exec: {
         amount: [{ amount: "50000", denom: "uscrt" }],
@@ -230,4 +234,4 @@ function countDecimals(value) {
     return value.toString().split(".")[1]?.length || 0; 
 }
 
-export { getPermit, getOrdersPermit, isValidAddress, countDecimals, getAddress, permitName, allowedTokens, permissions, permitQuery, getChainId, getApiURL }
+export { getPermit, getOrdersPermit, isValidAddress, countDecimals, getAddress, permitName, allowedTokens, permissions, permitQuery, getChainId, getApiURL, sleep }

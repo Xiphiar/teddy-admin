@@ -14,6 +14,13 @@ import { SecretNetworkClient } from 'secretjs';
 import { Spinner } from 'react-bootstrap';
 import FactoryTeddyCard from './FactoryTeddyCard'
 import { toast } from 'react-toastify';
+import { MsgExecuteContract } from 'secretjs';
+import tryNTimes from "../utils/tryNTimes";
+import axios from 'axios';
+import { sleep } from '../utils/keplrHelper';
+
+const permitName = "MTC-Cancel-Order";
+const allowedDestinations = ["teddyapi.xiphiar.com", "localhost:9176", 'teddyapi-testnet.xiphiar.com'];
 
 //export default class OrderModal extends React.Component {
 export default function OrderModal(props){
@@ -34,6 +41,8 @@ export default function OrderModal(props){
     const [view, setView] = useState(false);
     const [teddyData, setTeddyData] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [loadingMint, setLoadingMint] = useState(false);
+    const [loadingCancel, setLoadingCancel] = useState(false);
     const [verified, setVerified] = useState(false);
     //const [history, setHistory] = useState();
     let navigate = useNavigate();
@@ -47,10 +56,13 @@ export default function OrderModal(props){
         setVerified(false);
         setTeddyData([]);
         setLoading(false);
+        setLoadingCancel(false);
+        setLoadingMint(false);
         setView(false);
     },[props.order])
 
     let queryJs = undefined
+    let signerJs = undefined
     let signature = undefined
     let walletAddress = undefined
 
@@ -68,6 +80,23 @@ export default function OrderModal(props){
             grpcWebUrl: process.env.REACT_APP_GRPC_URL,
             chainId: process.env.REACT_APP_CHAIN_ID,
         });
+    }
+
+    const setupSignerJs = async() => {
+        if (!signerJs) {
+            await window.keplr.enable(process.env.REACT_APP_CHAIN_ID);
+            const keplrOfflineSigner = window.getOfflineSignerOnlyAmino(process.env.REACT_APP_CHAIN_ID);
+            const [{ address: myAddress }] = await keplrOfflineSigner.getAccounts();
+    
+            signerJs = await SecretNetworkClient.create({
+                grpcWebUrl: process.env.REACT_APP_GRPC_URL,
+                chainId: process.env.REACT_APP_CHAIN_ID,
+                wallet: keplrOfflineSigner,
+                walletAddress: myAddress,
+                encryptionUtils: window.getEnigmaUtils(process.env.REACT_APP_CHAIN_ID),
+            });
+            walletAddress = myAddress;
+        }
     }
 
     const setupPermit = async() => {
@@ -104,8 +133,179 @@ export default function OrderModal(props){
 
     }
 
-    const handleVerify = async() => {
+    const handleCancel = async() => {
+        setLoadingCancel(true);
+
+        await setupSignerJs();
+
         try {
+            let isVerified = verified;
+            if (!isVerified) isVerified = await handleVerify();
+            
+        } catch(e) {
+            console.error(e)
+            alert(`Failed to verify order! Are connected with the Admin wallet?\nError: ${e}`)
+            setLoading(false);
+            setLoadingCancel(true);
+            return;
+        }
+
+        try {
+            //pprepare burn TX
+            const returnTx = new MsgExecuteContract({
+                sender: walletAddress,
+                contractAddress: process.env.REACT_APP_NFT_ADDRESS,
+                codeHash: process.env.REACT_APP_NFT_HASH, // optional but way faster
+                msg: {
+                    batch_transfer_nft: {
+                        transfers: [
+                            {
+                                recipient: order.owner,
+                                token_ids: [order.teddy1.toString(), order.teddy2.toString(), order.teddy3.toString()],
+                                memo: "Canceled MTC Factory Order"
+                            }
+                        ]
+    
+                    }
+                }
+            })
+
+            let paymentReturnTx;
+
+            if (order.goldToken) {
+                // prepare token return TX
+                paymentReturnTx = new MsgExecuteContract({
+                    sender: walletAddress,
+                    contractAddress: process.env.REACT_APP_NFT_ADDRESS,
+                    codeHash: process.env.REACT_APP_NFT_HASH, // optional but way faster
+                    msg: {
+                        transfer_nft: {
+                            recipient: order.owner,
+                            token_id: order.goldToken.toString(),
+                            memo: "Canceled MTC Factory Order"
+                        }
+                    }
+                })
+            } else {
+                // prepare sSCRT return TX
+                paymentReturnTx = new MsgExecuteContract({
+                    sender: walletAddress,
+                    contractAddress: process.env.REACT_APP_TOKEN_ADDRESS,
+                    codeHash: process.env.REACT_APP_TOKEN_HASH, // optional but way faster
+                    msg: {
+                        transfer: {
+                            recipient: order.owner,
+                            amount: "5000000"
+                        }
+                    }
+                })
+            }
+
+
+            // execute TXs
+            const txToast = toast.loading("Transaction Pending...")
+
+            const tx = await signerJs.tx.broadcast([returnTx, paymentReturnTx],
+                {
+                    gasLimit: 200_000,
+                },
+            ).catch(e=> toast.update(txToast, { render: "Transaction Failed", type: "error", isLoading: false, autoClose: 5000 }) );
+
+            console.log('*TX*',tx)
+
+            if (tx.code) {
+                toast.update(txToast, { render: "Transaction Failed", type: "error", isLoading: false, autoClose: 5000 });
+                throw new Error(tx.rawLog)
+            }
+
+            toast.update(txToast, { render: "Transaction Processed", type: "success", isLoading: false, autoClose: 5000 });
+
+            //sign permit
+            // permit is used to authenticate API
+            const permitTx = {
+                chain_id: process.env.REACT_APP_CHAIN_ID,
+                account_number: "0", // Must be 0
+                sequence: "0", // Must be 0
+                fee: {
+                amount: [{ denom: "uscrt", amount: "0" }], // Must be 0 uscrt
+                gas: "1", // Must be 1
+                },
+                msgs: [
+                {
+                    type: "cancel_order", // Must be "query_permit"
+                    value: {
+                        permit_name: permitName,
+                        allowed_destinations: allowedDestinations,
+                        cancel_props: {
+                            order_id: order.id,
+                            return_hash: tx.transactionHash,
+                        }
+                    },
+                },
+                ],
+                memo: "" // Must be empty
+            }
+            console.log("Unsigned: ", JSON.stringify(permitTx,undefined,2))
+
+            const signature = await tryNTimes({
+                times: 3,
+                toTry: async() => {
+                    const {signature} = await window.keplr.signAmino(
+                        process.env.REACT_APP_CHAIN_ID,
+                        walletAddress,
+                        permitTx,
+                        {
+                        preferNoSetFee: true, // Fee must be 0, so hide it from the user
+                        preferNoSetMemo: true, // Memo must be empty, so hide it from the user
+                        }
+                    );
+                    await sleep(100);
+                    return signature;
+                },
+                onErr: async(error) => {
+                    console.error("Permit signing error: ", error)
+                    alert('Error: Failed to sign permit.\nPlease close any Keplr windows and click OK to try again.\nYou must accept this request to update the order database!')
+                    return true
+                }
+            })
+            console.log(signature)
+
+
+            // new teddy data for backend API
+            var params = new URLSearchParams();
+            params.append('permit_name', permitName);
+            params.append('allowed_destinations', JSON.stringify(allowedDestinations));
+            params.append('signature', JSON.stringify(signature));
+            params.append('order_id', order.id);
+            params.append('return_hash', tx.transactionHash.trim());
+
+            const response = await toast.promise(
+                axios.post(
+                    `${process.env.REACT_APP_BACKEND_URL}/factory/cancel`,
+                    params
+                ).catch(err => {
+                    console.error(err.response?.data?.message || err.message || err)
+                    throw new Error(err.response?.data?.message || err.message || err)
+                }),
+                {
+                pending: 'Canceling Order...',
+                success: 'Order Canceled',
+                error: 'Failed to update database'
+                }
+            )
+            console.log(response.data);
+
+            setLoading(false)
+            alert(`Success: ${response.data.message}`)
+
+            props.refresh();
+
+        } catch (error) {
+            alert(`Problem returning teddies. Are you connected with the admin wallet?\n${error}`)
+        }
+    };
+
+    const handleVerify = async() => {
             setLoading('Getting Permit...');
             await setupQueryJs();
             await setupPermit();
@@ -279,14 +479,22 @@ export default function OrderModal(props){
             console.log('OK');
             return true;
 
+
+    }
+
+    const wrappedVerify = async() => {
+        try {
+            let isVerified = verified;
+            if (!isVerified) isVerified = await handleVerify();
         } catch(e) {
             console.error(e)
             alert(`Failed to verify order! Are connected with the Admin wallet?\nError: ${e}`)
-            setLoading(false);
         }
+        setLoading(false);
     }
 
     const handleMint = async() => {
+        setLoadingMint(true);
         try {
             let isVerified = verified;
             if (!isVerified) isVerified = await handleVerify();
@@ -298,7 +506,9 @@ export default function OrderModal(props){
             console.error(e)
             alert(`Failed to verify order! Are connected with the Admin wallet?\nError: ${e}`)
             setLoading(false);
+            setLoadingMint(false);
         }
+        setLoadingMint(false);
     }
 
         return (
@@ -365,11 +575,11 @@ export default function OrderModal(props){
                                 <span style={{fontSize: "16px"}}>{order?.goldToken ? `Gold Token #${order?.goldToken}` : `sSCRT`}</span><br/>
                                 { loading ?
                                     <>
-                                    <Button disabled={true}>Verify <Spinner animation="border" variant="light" /></Button><br/>
+                                    <Button disabled={true}><Spinner animation="border" variant="light" size="sm" /> Verify</Button><br/>
                                     <span>{loading}</span>
                                     </>
                                 :
-                                    <Button disabled={verified} onClick={() => handleVerify()}>{verified ? 'Verified ✔' : 'Verify'}</Button>
+                                    <Button disabled={verified} onClick={() => wrappedVerify()}>{verified ? 'Verified ✔' : 'Verify'}</Button>
                                 }
                             </Col>
                             <Col>
@@ -438,11 +648,13 @@ export default function OrderModal(props){
                             <Col xs={"auto"} className='text-center'>
                                 { loading ?
                                     <>
-                                    <Button disabled={true}><Spinner animation="border" variant="light" /></Button><br/>
+                                    <Button disabled={true}> {loadingMint ? <Spinner animation="border" variant="light" size='sm' />:null} Mint</Button> &nbsp;&nbsp;&nbsp;
+                                    <Button disabled={true}> {loadingCancel ? <Spinner animation="border" variant="light" size='sm' />:null} Cancel</Button>
+                                    <br/>
                                     <span>{loading}</span>
                                     </>
                                 :
-                                    <Button onClick={() => handleMint()}>Mint</Button>
+                                    <><Button onClick={() => handleMint()}>Mint</Button> <Button onClick={() => handleCancel()}>Cancel</Button></>
                                 }
                             </Col>
                         </Row>

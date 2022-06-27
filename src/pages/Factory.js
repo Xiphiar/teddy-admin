@@ -36,6 +36,11 @@ const Factory = () => {
     setShowModal(true);
   }
 
+  const refresh = async() => {
+    getOrders();
+    setShowModal(false);
+  }
+
   const getOrders = async() => {
     try{
         setLoading(true);
@@ -84,7 +89,7 @@ const Factory = () => {
   return (
     <div>
       <Meta title="MTC Factory Orders"/>
-      <OrderModal show={showModal} hide={() => setShowModal(false)} order={orders[showIndex]} />
+      <OrderModal show={showModal} hide={() => setShowModal(false)} order={orders[showIndex]} refresh={() => refresh()} />
       <h1>Factory Orders</h1>
       <Row>
         <Col md={10}>
