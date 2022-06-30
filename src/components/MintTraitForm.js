@@ -278,7 +278,7 @@ export default function MintTraitForm() {
         if (!teddyId || teddyId.length>8) return errorToast("Teddy ID must be less than 8 characters.");
 
         //encrypt file
-        const encryptPromise = encryptFile(privFile);
+        const encryptPromise = encryptFile(privFile, teddyId);
         toast.promise(
             encryptPromise,
             {

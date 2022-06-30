@@ -1,16 +1,22 @@
 import retry from 'async-await-retry';
 import axios from 'axios'
 
-async function encryptFile(file){
+async function encryptFile(file, id){
     //get original image file
     //const img = fs.readFileSync(path);
     //const img = Buffer.from(file)
     //console.log(img);
 
+    const fileName = `MTC-${id}`;
+
     //prepare POST data
+    console.log('File to Encrypt:', file);
+    console.log('New Filename:', fileName);
+
     const formData = new FormData();
-    formData.append("data", file, file.path);
+    formData.append("data", file, fileName);
     formData.append("config", JSON.stringify({ encrypt: true }));
+
     const res = await retry(
         () => {
             console.log(`trying to upload`)
