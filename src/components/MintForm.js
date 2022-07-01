@@ -346,7 +346,7 @@ export default function MintForm({order}) {
         if (nft_dossier)  return errorToast(`ID ${teddyId} already exists in contract.`);
 
         //encrypt file
-        const encryptPromise = encryptFile(privFile);
+        const encryptPromise = encryptFile(privFile, teddyId);
         toast.promise(
             encryptPromise,
             {
