@@ -151,7 +151,6 @@ export default function OrderModal(props){
         }
 
         try {
-            //pprepare burn TX
             const returnTx = new MsgExecuteContract({
                 sender: walletAddress,
                 contractAddress: process.env.REACT_APP_NFT_ADDRESS,
@@ -423,15 +422,15 @@ export default function OrderModal(props){
                             key: vkey
                         }
                     }
-
                     
-                    const { balance: currentBalance } = await queryJs.query.compute.queryContract({
+                    const currentBalanceResult = await queryJs.query.compute.queryContract({
                         contractAddress: process.env.REACT_APP_TOKEN_ADDRESS,
                         codeHash: process.env.REACT_APP_TOKEN_HASH, // optional but way faster
                         query: balanceQuery,
                       }
                     );
-                    console.log('Current Balance',parseInt(currentBalance.amount)/10e5);
+
+                    console.log('Current Balance',parseInt(currentBalanceResult.balance.amount)/10e5);
 
                     const { balance: heightBalance } = await queryJs.query.compute.queryContract({
                         contractAddress: process.env.REACT_APP_TOKEN_ADDRESS,
@@ -465,6 +464,7 @@ export default function OrderModal(props){
                     //   console.log(result);
 
                 } catch(error) {
+                    console.error(error);
                     alert(`Error Verifying sSCRT Payment:\n${error}`)
                     
                     setLoading(false);

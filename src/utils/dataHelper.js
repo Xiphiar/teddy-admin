@@ -149,7 +149,7 @@ const queryOwnedTokens = async(client, address, permit) => {
       
       const data = await client.query.compute.queryContract({
         contractAddress: process.env.REACT_APP_NFT_ADDRESS,
-        codeHash: process.env.REACT_APP_NFT_CODE_HASH,
+        codeHash: process.env.REACT_APP_NFT_HASH,
         query: query2,
       })
       console.log('Query Data', data);
