@@ -24,6 +24,8 @@ import encryptFile from '../utils/encrypt';
 import addPulsar from "../utils/addPulsar";
 import tryNTimes from "../utils/tryNTimes";
 import { PubImageSelect } from "./PubImageSelect";
+import { queryTokenMetadata } from "../utils/dataHelper"
+import { getPermit } from "../utils/keplrHelper";
 
 const permitName = "MTC-Mint-Teddy";
 const allowedDestinations = ["teddyapi.xiphiar.com", "localhost:9176", 'teddyapi-testnet.xiphiar.com'];
@@ -458,6 +460,43 @@ export default function MintForm({order}) {
             }
         })
 
+        //prepare swap metadata txs
+        const txToast = toast.loading("Waiting for Permit...")
+
+        const qpSignature = await getPermit(myAddress);
+
+        toast.update(txToast, { render: "Preparing..." });
+
+        const data = await Promise.all([
+            queryTokenMetadata(secretjs, order.teddy1.toString(), qpSignature),
+            queryTokenMetadata(secretjs, order.teddy2.toString(), qpSignature),
+            queryTokenMetadata(secretjs, order.teddy3.toString(), qpSignature)
+        ])
+        if (data.find(v=>v.nft_dossier.display_private_metadata_error!==null)) throw new Error(`You do not have access to the private metadata of a teddy in this order.`)
+
+        const tokenIds = [order.teddy1.toString(),order.teddy2.toString(),order.teddy3.toString()];
+        const swapTxs = [];
+
+        for (let i=0; i < data.length; i++) {
+            const metadata = data[i].nft_dossier;
+            console.log(metadata);
+
+            if (metadata.private_metadata.extension.media) {
+                //we need to swap
+                swapTxs.push(new MsgExecuteContract({
+                    sender: myAddress,
+                    contractAddress: process.env.REACT_APP_NFT_ADDRESS,
+                    codeHash: process.env.REACT_APP_NFT_HASH, // optional but way faster
+                    msg: {
+                        to_pub: {
+                            token_id: tokenIds[i]
+                        }
+                    }
+                }))
+            }
+        }
+        console.log(swapTxs);
+
         //pprepare burn TX
         const burnTx = new MsgExecuteContract({
             sender: myAddress,
@@ -478,10 +517,11 @@ export default function MintForm({order}) {
 
 
         // execute TXs
-        const txToast = toast.loading("Transaction Pending...")
-        const tx = await secretjs.tx.broadcast([mintTx, xferTx, burnTx],
+        //const txToast = toast.loading("Transaction Pending...")
+        toast.update(txToast, { render: "Transaction Pending..." })
+        const tx = await secretjs.tx.broadcast([...swapTxs, mintTx, xferTx, burnTx],
             {
-                gasLimit: 200_000,
+                gasLimit: 250_000,
             },
         ).catch(e=> toast.update(txToast, { render: "Transaction Failed", type: "error", isLoading: false, autoClose: 5000 }) );
 
