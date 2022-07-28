@@ -411,6 +411,11 @@ export default function MintForm({order}) {
             value: eyewear.trim()
         })
 
+        privAttributes.push({
+            trait_type: "DAO Value",
+            value: daoValue
+        })
+
         // handle message to execute on the contract
         const mintMsg = {
             mint_mutant: {
