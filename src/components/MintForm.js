@@ -26,193 +26,14 @@ import tryNTimes from "../utils/tryNTimes";
 import { PubImageSelect } from "./PubImageSelect";
 import { queryTokenMetadata } from "../utils/dataHelper"
 import { getPermit } from "../utils/keplrHelper";
-
-const permitName = "MTC-Mint-Teddy";
-const allowedDestinations = ["teddyapi.xiphiar.com", "localhost:9176", 'teddyapi-testnet.xiphiar.com'];
-
-const pubBaseDesigns = [
-    { type: "teddy", name: 'Teddy-bear', url: "https://arweave.net/0ZP_yaIeYc4vGwMxqoJdqgOGKjZpspl7ktGUmUvNee4"},
-    { type: "robot", name: 'Ro-Bear', url: "https://arweave.net/9JmggQG3JV5eLFZdvBfL3Vk7APLOmgN_WK4km7qq7fE"},
-    { type: "zombie", name: 'Zom-Bear', url: "https://arweave.net/X2nzHkuIKvtucDp1UhxuHjS2OgwhyqF3wKS0U4gBlpk"}
-]
-
-const extraPubImages = [
-    { name: 'Factory', url: "https://arweave.net/-Qe3YXsw5xAyCP-ZizCHSMhTiG-yN8H3VYnphbmCjK8"},
-    { name: 'Error', url: "https://arweave.net/FqTDF4Iq4Axtuv6ZG8thWrMUggx6GIcHqL-PJPJ0MfY"}
-]
-
-const faces = [
-    'Aint no snitch',
-    'Angry',
-    'Confused',
-    'Dead serious',
-    'Evil',
-    'Happy',
-    'Shocked',
-    'Smug',
-    'Teddy Smile'    
-]
-
-const colors = ['Baby Blue',
-    'Black',
-    'Blood Stained',
-    'Cheetah print',
-    'Gold',
-    'Orange',
-    'Panda',
-    'Polar',
-    'Purple',
-    'Radioactive - Green',
-    'Radioactive - Pink',
-    'Red',
-    'Standard brown',
-    'Tartan',
-    "This isn't the standard brown.. Promise",
-    'Tiger stripes']
-
-const backgrounds = ['AlterDapp Maxi',
-    'Baby degens',
-    'Bitcoin Maxi',
-    'Cobweb',
-    'Cosmos Maxi',
-    'Ethereum Maxi',
-    'Ew!',
-    "I don't need a professional",
-    'LUNA Maxi',
-    "Needs patchin' up",
-    'No more nightmares',
-    'Secret Maxi',
-    'Terra Maxi',
-    'To do List',
-    'Turn me on',
-    'Wall plant',
-    "We're watching you",
-    'Wen mint?',
-    'Wen moon',]
-
-const hands = [
-    'A little off the top',
-    'Airstrike inbound',
-    'Alpha Pouch',
-    'am Gucci',
-    'Attitude adjusters',
-    'Chainsaw',
-    'Crowd pleaser',
-    'Flame on',
-    'Gameboy',
-    'German piano',
-    'Going somewhere?',
-    'Got Bank',
-    'Midnight raver',
-    'Midnight raver + Nunchuck',
-    'Mini Uzi',
-    'Mini Uzi + Got Bank',
-    'Mini-Me',
-    'Mini-Me + A sharp instrument',
-    'Mini-Me + am gucci',
-    'Mini-Me + chainsaw',
-    'Mini-Me + crowd pleaser',
-    'Mini-Me + flame on',
-    'Mini-Me + Gameboy',
-    'Mini-Me + Gamerboy',
-    'Mini-Me + German Piano',
-    'Mini-Me + going somewhere',
-    'Mini-Me + mini uzi',
-    'Mini-Me + RPG',
-    'Mini-Me + Sai swords',
-    'Mini-Me + This is my boom-stick!',
-    'Mini-Me + where them diamond at',
-    'Mini-Me + where them diamonds at',
-    'Mini-Me + WTF',
-    'Mini-Me + WTF!',
-    'Mini-uzi',
-    'New wave axe',
-    'Nunchuck',
-    'Persuader',
-    'RPG',
-    'Sai Swords',
-    'Samari Sword',
-    'Sharp instrument',
-    'This is my boom-stick!',
-    'Whale Wallet',
-    'Where them diamonds at?',
-    'WTF'
-]
-
-const heads = [
-    'ATOM Cap',
-    'Balaclava',
-    'BSC Cap',
-    'Crocodile dundee hat',
-    'ETH Cap',
-    'For Valhalllla!',
-    'Gasmask',
-    'Gasmask + Ooorah!',
-    'Gasmask + Yeeehaaw!',
-    'LUNA Cap',
-    'Oorah!',
-    'OSMO Cap',
-    'Party Hat',
-    'Red Bandana',
-    'Red Mohawk',
-    'SCRT Cap',
-    'SCRT YeeeHaaw!',
-    'Sneeze stopper',
-    'Sneeze stopper + SCRT branded hat',
-    'Squid Game Mask',
-    'Squid Game Mask + take-off',
-    'Take-off',
-    'Terra Cap',
-    'The Donald',
-    'The hunter',
-    'YeeeHaaw!'
-]
-
-const bodys = [
-    'ATOM Enthusiast',
-    'ATOM Hoodie',
-    'Black Hoodie Enthusiast',
-    'Black shirt enthusiast',
-    'BSC Enthusiast',
-    'BSC Hoodie',
-    'Builder Bear',
-    'Christmas is just around the corner',
-    'ETH Enthusiast',
-    'ETH Hoodie',
-    'Grease monkey',
-    'I <3 MUM Tattoo',
-    'Its chinchilla darling',
-    'LUNA Enthusiast',
-    'LUNA Hoodie',
-    'OSMO Enthusiast',
-    'OSMO Hoodie',
-    'SCRT Enthusiast',
-    'SCRT Hoodie',
-    "Trust me, I'm a doctor",
-]
-
-const eyewears = [
-    '3D Glasses',
-    'BTC Pew! Pew!',
-    'Cyborg eye',
-    'Cyclopes sunglasses',
-    'Grouchio Marx',
-    "I'm legally blind",
-    'Monocle',
-    'Not a real ninja',
-    'Oo a pineapple',
-    'Pew! Pew!',
-    'Steampunk Glasses',
-    'Sunny out',
-    'What do you call a fish with one eye?',
-]
+import { permitName, allowedDestinations, faces, hands, heads, bodys, eyewears, colors, backgrounds, extraPubImages, pubBaseDesigns } from "./mintConfig"
 
 export default function MintForm({order}) {
     const [loading, setLoading] = useState(false);
 
     const [teddyId, setTeddyId] = useState("");
-    const [teddyName, setTeddyName] = useState(order.name || '')
-    const [recipient, setRecipient] = useState(order.owner || '')
+    const [teddyName, setTeddyName] = useState(order?.name || '')
+    const [recipient, setRecipient] = useState(order?.owner || '')
 
     const [pubImage, setPubImage] = useState();
     const [pubImageOptions, setPubImageOptions] = useState([]);
@@ -465,66 +286,71 @@ export default function MintForm({order}) {
             }
         })
 
+        const txToast = toast.loading("Processing...")
+
         //prepare swap metadata txs
-        const txToast = toast.loading("Waiting for Permit...")
+        const additionalTxs = [];
+        if (order) {
+            //const txToast = toast.loading("Waiting for Permit...")
+            toast.update(txToast, {render: "Waiting for Permit..."})
+            const qpSignature = await getPermit(myAddress);
+            toast.update(txToast, { render: "Preparing..." });
+            const data = await Promise.all([
+                queryTokenMetadata(secretjs, order.teddy1.toString(), qpSignature),
+                queryTokenMetadata(secretjs, order.teddy2.toString(), qpSignature),
+                queryTokenMetadata(secretjs, order.teddy3.toString(), qpSignature)
+            ])
+            if (data.find(v=>v.nft_dossier.display_private_metadata_error!==null)) throw new Error(`You do not have access to the private metadata of a teddy in this order.`)
+            const tokenIds = [order.teddy1.toString(),order.teddy2.toString(),order.teddy3.toString()];
+        
 
-        const qpSignature = await getPermit(myAddress);
+            for (let i=0; i < data.length; i++) {
+                const metadata = data[i].nft_dossier;
+                console.log(metadata);
 
-        toast.update(txToast, { render: "Preparing..." });
-
-        const data = await Promise.all([
-            queryTokenMetadata(secretjs, order.teddy1.toString(), qpSignature),
-            queryTokenMetadata(secretjs, order.teddy2.toString(), qpSignature),
-            queryTokenMetadata(secretjs, order.teddy3.toString(), qpSignature)
-        ])
-        if (data.find(v=>v.nft_dossier.display_private_metadata_error!==null)) throw new Error(`You do not have access to the private metadata of a teddy in this order.`)
-
-        const tokenIds = [order.teddy1.toString(),order.teddy2.toString(),order.teddy3.toString()];
-        const swapTxs = [];
-
-        for (let i=0; i < data.length; i++) {
-            const metadata = data[i].nft_dossier;
-            console.log(metadata);
-
-            if (metadata.private_metadata.extension.media) {
-                //we need to swap
-                swapTxs.push(new MsgExecuteContract({
-                    sender: myAddress,
-                    contractAddress: process.env.REACT_APP_NFT_ADDRESS,
-                    codeHash: process.env.REACT_APP_NFT_HASH, // optional but way faster
-                    msg: {
-                        to_pub: {
-                            token_id: tokenIds[i]
+                if (metadata.private_metadata.extension.media) {
+                    //we need to swap
+                    additionalTxs.push(new MsgExecuteContract({
+                        sender: myAddress,
+                        contractAddress: process.env.REACT_APP_NFT_ADDRESS,
+                        codeHash: process.env.REACT_APP_NFT_HASH, // optional but way faster
+                        msg: {
+                            to_pub: {
+                                token_id: tokenIds[i]
+                            }
                         }
-                    }
-                }))
-            }
-        }
-        console.log(swapTxs);
-
-        //pprepare burn TX
-        const burnTx = new MsgExecuteContract({
-            sender: myAddress,
-            contractAddress: process.env.REACT_APP_NFT_ADDRESS,
-            codeHash: process.env.REACT_APP_NFT_HASH, // optional but way faster
-            msg: {
-                batch_transfer_nft: {
-                    transfers: [
-                        {
-                            recipient: process.env.REACT_APP_MT_DOOM_ADDR,
-                            token_ids: [order.teddy1, order.teddy2, order.teddy3]
-                        }
-                    ]
-
+                    }))
                 }
             }
-        })
+            console.log(additionalTxs);
+
+
+            //pprepare burn TX
+            const burnTx = new MsgExecuteContract({
+                sender: myAddress,
+                contractAddress: process.env.REACT_APP_NFT_ADDRESS,
+                codeHash: process.env.REACT_APP_NFT_HASH, // optional but way faster
+                msg: {
+                    batch_transfer_nft: {
+                        transfers: [
+                            {
+                                recipient: process.env.REACT_APP_MT_DOOM_ADDR,
+                                token_ids: [order.teddy1, order.teddy2, order.teddy3]
+                            }
+                        ]
+
+                    }
+                }
+            })
+            additionalTxs.push(burnTx);
+        }
 
 
         // execute TXs
         //const txToast = toast.loading("Transaction Pending...")
         toast.update(txToast, { render: "Transaction Pending..." })
-        const tx = await secretjs.tx.broadcast([...swapTxs, mintTx, xferTx, burnTx],
+
+        const tx = await secretjs.tx.broadcast([...additionalTxs, mintTx, xferTx],
             {
                 gasLimit: 250_000,
             },
@@ -569,10 +395,11 @@ export default function MintForm({order}) {
                     pub_url: pubImage,
                     dao_value: daoValue,
                     "1of1": 0,
-                    order: {
-                        id: order.id,
-                        teddies: [order.teddy1, order.teddy2, order.teddy3]
-                    }
+                    order: order ? 
+                    {
+                        id: order?.id,
+                        teddies: [order?.teddy1, order?.teddy2, order?.teddy3]
+                    } : false,
                   }
                 },
               },
@@ -655,6 +482,8 @@ export default function MintForm({order}) {
     return (
     <Row>
     <Col md="6">
+        
+    {order ? <>{`Order ID: ${order.id}`}<br/><br/></> : null }
         <Form onSubmit={handleSubmit}>
         <Row className="mb-3">
             <Form.Group as={Col} md="12" controlId="validationCustom01">
@@ -663,7 +492,7 @@ export default function MintForm({order}) {
                 type="text"
                 placeholder=""
                 value={recipient}
-                disabled={true}
+                disabled={order ? true : false}
                 onChange={e => setRecipient(e.target.value)}
                 />
                 <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
