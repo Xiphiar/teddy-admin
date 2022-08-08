@@ -314,7 +314,7 @@ export default function OrderModal(props){
 
         //--- verify tx hash ---//
             setLoading('Verifying Transaction...');
-            
+            console.log('*TX Hash*', order.tx_hash);
             const tx = await queryJs.query.getTx(order.tx_hash);
             console.log('*TX*', tx)
             if (!tx) throw new Error('TX Not Found. Nodes may be behind. If this isnt fixed soon, contact Xiph.')
