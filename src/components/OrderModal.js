@@ -317,6 +317,7 @@ export default function OrderModal(props){
             
             const tx = await queryJs.query.getTx(order.tx_hash);
             console.log('*TX*', tx)
+            if (!tx) throw new Error('TX Not Found. Nodes may be behind. If this isnt fixed soon, contact Xiph.')
             if (tx.code) throw new Error('TX for given hash failed, this shouldnt happen...')
 
             const height = tx.height;
@@ -584,7 +585,7 @@ export default function OrderModal(props){
                             </Col>
                             <Col>
                                 <span style={{fontWeight: "bold"}}>TX Hash</span><br/>
-                                <span style={{fontSize: "12px"}}><a target='_blank' rel='noreferrer' href={`https://secretnodes.com/secret/chains/${process.env.REACT_APP_CHAIN_ID}/transactions/${order?.tx_hash}`}>{order?.tx_hash || "None. Wait, that shouldnt happen..."}</a></span><br/>
+                                <span style={{fontSize: "12px"}}><a target='_blank' rel='noreferrer' href={`https://secretnodes.com/transactions/${order?.tx_hash}`}>{order?.tx_hash || "None. Wait, that shouldnt happen..."}</a></span><br/>
                             </Col>
                         </Row>
                         <br />
