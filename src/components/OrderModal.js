@@ -175,8 +175,8 @@ export default function OrderModal(props){
                 // prepare token return TX
                 paymentReturnTx = new MsgExecuteContract({
                     sender: walletAddress,
-                    contractAddress: process.env.REACT_APP_NFT_ADDRESS,
-                    codeHash: process.env.REACT_APP_NFT_HASH, // optional but way faster
+                    contractAddress: process.env.REACT_APP_TICKET_ADDRESS,
+                    codeHash: process.env.REACT_APP_TICKET_HASH, // optional but way faster
                     msg: {
                         transfer_nft: {
                             recipient: order.owner,
