@@ -3,7 +3,7 @@ import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Form from 'react-bootstrap/Form'
 
-export default function TraitSelect({value, set, label, options}) {
+export default function TraitSelect({value, set, label, options, required}) {
     const [selected, setSelected] = useState(value)
     const [customValue, setCustomValue] = useState('')
     //console.log(`${label}: `,value, selected, customValue)
@@ -20,7 +20,7 @@ export default function TraitSelect({value, set, label, options}) {
                 <Col md="6">
                     <Form.Label>{label}</Form.Label>
                     <Form.Control
-                        required
+                        required={required}
                         as="select"
                         value={selected}
                         onChange={e => {
@@ -32,7 +32,7 @@ export default function TraitSelect({value, set, label, options}) {
                             setSelected(e.target.value);
                     }}
                     >
-                        <option value={false} key={`${label}-none`}>None</option>
+                        <option value={''} key={`${label}-none`}>None</option>
                         {options.map((item) => {
                             return (<option key={`${label}-${item}`}>{item}</option>)
                         })}

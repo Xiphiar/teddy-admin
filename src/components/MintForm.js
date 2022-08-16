@@ -133,6 +133,13 @@ export default function MintForm({order}) {
             'Priv File': privFile
         })
 
+        //validate input
+        if (!baseDesign) {return errorToast("No Base Design selected");}
+        if (!privFile) {return errorToast("No Private Image Uploaded");}
+        if (!teddyId || teddyId.length>8) return errorToast("Teddy ID must be less than 8 characters.");
+        if (baseDesign === 'Ro-Bear' && face) return errorToast("Ro-Bears cannot have facial expressions.");
+        if (baseDesign !== 'Ro-Bear' && !face) return errorToast("No Facial Expression selected.");
+
         // connect Keplr and create signing secretjs client
         if (process.env.REACT_APP_CHAIN_ID.includes("pulsar")) addPulsar();
         await window.keplr.enable(process.env.REACT_APP_CHAIN_ID);
@@ -146,11 +153,6 @@ export default function MintForm({order}) {
             walletAddress: myAddress,
             encryptionUtils: window.getEnigmaUtils(process.env.REACT_APP_CHAIN_ID,),
         });
-
-        //validate input
-        if (!baseDesign) {return errorToast("No Base Design selected");}
-        if (!privFile) {return errorToast("No Private Image Uploaded");}
-        if (!teddyId || teddyId.length>8) return errorToast("Teddy ID must be less than 8 characters.");
 
         // validate ID is available in database
         const {data: dbresponse} = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/teddy/${teddyId.trim()}`)
@@ -237,6 +239,8 @@ export default function MintForm({order}) {
             value: daoValue
         })
 
+        alert(`Pub Attributes: \n${pubAttributes.map(item=>`${item.trait_type}: ${item.value}\n`)} \n Priv Attributes: \n${privAttributes.map(item=>`${item.trait_type}: ${item.value}\n`)}\nPlease verify traits are correct. Reject the transaction if not.`)
+        
         // handle message to execute on the contract
         const mintMsg = {
             mint_mutant: {
@@ -530,13 +534,13 @@ export default function MintForm({order}) {
 
 
         
-        <TraitSelect value={face} set={setFace} label="Facial Expression" options={faces}/>
-        <TraitSelect value={color} set={setColor} label="Bear Color" options={colors}/>
-        <TraitSelect value={background} set={setBackground} label="Background" options={backgrounds}/>
-        <TraitSelect value={hand} set={setHand} label="Held in Hand" options={hands}/>
-        <TraitSelect value={head} set={setHead} label="On Head" options={heads}/>
-        <TraitSelect value={body} set={setBody} label="On Body" options={bodys}/>
-        <TraitSelect value={eyewear} set={setEyewear} label="Eyewear" options={eyewears}/>
+        <TraitSelect value={face} set={setFace} label="Facial Expression" options={faces} required={false}/>
+        <TraitSelect value={color} set={setColor} label="Bear Color" options={colors} required={true}/>
+        <TraitSelect value={background} set={setBackground} label="Background" options={backgrounds} required={false}/>
+        <TraitSelect value={hand} set={setHand} label="Held in Hand" options={hands} required={false}/>
+        <TraitSelect value={head} set={setHead} label="On Head" options={heads} required={false}/>
+        <TraitSelect value={body} set={setBody} label="On Body" options={bodys} required={false}/>
+        <TraitSelect value={eyewear} set={setEyewear} label="Eyewear" options={eyewears} required={false}/>
         <Form.Group as={Col} md="4" controlId="validationCustom01">
             <Form.Label>DAO Value</Form.Label>
             <Form.Control
