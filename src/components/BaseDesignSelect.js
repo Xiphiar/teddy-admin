@@ -18,9 +18,9 @@ export function BaseDesignSelect({baseDesign, setBaseDesign}) {
                     <option value={"Teddy-bear"}>Teddy-bear</option>
                     <option value={'Ro-Bear'}>Ro-Bear</option>
                     <option value={'Zom-Bear'}>Zom-Bear</option>
-                    <option value={'Imposter-Alien'}>Imposter-Alien</option>
-                    <option value={'Imposter-Pug'}>Imposter-Pug</option>
-                    <option value={'Imposter-Waifu'}>Imposter-Waifu</option>
+                    <option value={'Imposter - Alien'}>Imposter - Alien</option>
+                    <option value={'Imposter - Pug'}>Imposter - Pug</option>
+                    <option value={'Imposter - Waifu'}>Imposter - Waifu</option>
                     <option value={'Parody Character'}>Parody Character</option>
                     <option value={"Mutant"}>Mutant</option>
                 </Form.Control>
