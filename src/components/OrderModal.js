@@ -305,6 +305,7 @@ export default function OrderModal(props){
     };
 
     const handleVerify = async() => {
+        try {
             setLoading('Getting Permit...');
             await setupQueryJs();
             await setupPermit();
@@ -315,10 +316,11 @@ export default function OrderModal(props){
         //--- verify tx hash ---//
             setLoading('Verifying Transaction...');
             console.log('*TX Hash*', order.tx_hash);
-            const tx = await queryJs.query.getTx(order.tx_hash);
+            //const tx = await queryJs.query.getTx(order.tx_hash);
+            const {data: tx} = await axios.get(`https://core.spartanapi.dev/secret/chains/secret-4/transactions/${order.tx_hash}`)
             console.log('*TX*', tx)
-            if (!tx) throw new Error('TX Not Found. Nodes may be behind. If this isnt fixed soon, contact Xiph.')
-            if (tx.code) throw new Error('TX for given hash failed, this shouldnt happen...')
+            if (!tx) throw new Error('TX Not Found. SecretNodes may be behind. If this isnt fixed soon, contact Xiph.')
+            if (tx.raw_transaction.tx_response.code) throw new Error('TX for given hash failed, this shouldnt happen...')
 
             const height = tx.height;
 
@@ -433,6 +435,8 @@ export default function OrderModal(props){
 
                     console.log('Current Balance',parseInt(currentBalanceResult.balance.amount)/10e5);
 
+                // Temporarily disabled, needs archive node
+                /*
                     const { balance: heightBalance } = await queryJs.query.compute.queryContract({
                         contractAddress: process.env.REACT_APP_TOKEN_ADDRESS,
                         codeHash: process.env.REACT_APP_TOKEN_HASH, // optional but way faster
@@ -453,16 +457,7 @@ export default function OrderModal(props){
                     console.log('Difference:', diff);
 
                     if (diff !== 5000000) throw new Error(`Invalid payment amount. Expected 5000000uSSCRT, received ${diff} uSSCRT`)
-
-                    // const result = await queryJs.query.bank.balance(
-                    //     {
-                    //       address: "secret1...",
-                    //       denom: "uscrt",
-                    //     },
-                    //     new grpc.Metadata({"x-cosmos-block-height": "2000000"})
-                    //   );
-                    
-                    //   console.log(result);
+                */
 
                 } catch(error) {
                     console.error(error);
@@ -479,8 +474,11 @@ export default function OrderModal(props){
             setLoading(false);
             console.log('OK');
             return true;
-
-
+        } catch(error) {
+            setLoading(false);
+            console.error(error);
+            toast.error(error.toString());
+        }
     }
 
     const wrappedVerify = async() => {
