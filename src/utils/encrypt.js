@@ -36,7 +36,7 @@ async function encryptFile(file, id){
         },
     );
     console.log(res);
-    return {hash: res.data.hashes[0], key: res.data.key}
+    return {hash: res.data[0].hash, key: res.data[0].key}
 }
 
 export default encryptFile;
