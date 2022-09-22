@@ -378,7 +378,7 @@ export default function MintTraitForm() {
             msg: mintMsg,
             },
             {
-            gasLimit: 100_000,
+            gasLimit: 400_000,
             },
         ).catch(e=> toast.update(txToast, { render: "Transaction Failed", type: "error", isLoading: false, autoClose: 5000 }) );
         console.log(tx)

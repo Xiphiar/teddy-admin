@@ -206,7 +206,7 @@ export default function OrderModal(props){
 
             const tx = await signerJs.tx.broadcast([returnTx, paymentReturnTx],
                 {
-                    gasLimit: 200_000,
+                    gasLimit: 500_000,
                 },
             ).catch(e=> toast.update(txToast, { render: "Transaction Failed", type: "error", isLoading: false, autoClose: 5000 }) );
 
