@@ -10168,10 +10168,10 @@ schema-utils@^3.0.0:
     ajv "^6.12.5"
     ajv-keywords "^3.5.2"
 
-secretjs@^1.4.0-alpha.10:
-  version "1.4.0-alpha.10"
-  resolved "https://registry.yarnpkg.com/secretjs/-/secretjs-1.4.0-alpha.10.tgz#abf890db82aff3780ed1c9d8cf2eb60cfa17b458"
-  integrity sha512-0C50gGM04NxDLJpXVtj5532fpheocQtSP7fGA74WPzGgD3Qx3v3/zo8BPBraZtCy3JdPHh+tAt9LkLtLJcU0aw==
+secretjs@^1.4.3:
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/secretjs/-/secretjs-1.4.3.tgz#393fc381fa2924e9b339e52d1ba5ce9b3bc68241"
+  integrity sha512-IDhoPWg1Nra7ji3FU07ZHbxkp1S5uQnbLsDNj/t6Q9M9wysxv/BZafHnoEkAcB7FYYwOkxs5RxnSAZ2oiJORPw==
   dependencies:
     "@cosmjs/encoding" "0.27.1"
     "@cosmjs/math" "0.27.1"

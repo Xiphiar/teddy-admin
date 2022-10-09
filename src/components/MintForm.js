@@ -356,7 +356,7 @@ export default function MintForm({order}) {
 
         const tx = await secretjs.tx.broadcast([...additionalTxs, mintTx, xferTx],
             {
-                gasLimit: 600_000,
+                gasLimit: 1_200_000,
             },
         ).catch(e=> toast.update(txToast, { render: "Transaction Failed", type: "error", isLoading: false, autoClose: 5000 }) );
 
