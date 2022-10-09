@@ -316,15 +316,32 @@ export default function OrderModal(props){
         //--- verify tx hash ---//
             setLoading('Verifying Transaction...');
             console.log('*TX Hash*', order.tx_hash);
-            //const tx = await queryJs.query.getTx(order.tx_hash);
-            const {data: tx} = await axios.get(`https://core.spartanapi.dev/secret/chains/secret-4/transactions/${order.tx_hash}`)
+
+            let tx;
+            // Try to get TX from node
+            try {
+                tx = await queryJs.query.getTx(order.tx_hash);
+            } catch (error) {
+                console.error('Couldnt get TX from node: ', error)
+            }
+
+            // Try to get TX from SecretNodes
+            if (!tx) {
+                try {
+                    const {data} = await axios.get(`https://core.spartanapi.dev/secret/chains/${process.env.REACT_APP_CHAIN_ID}/transactions/${order.tx_hash}`)
+                    tx = data.raw_transaction.tx_response
+                } catch(error){
+                    console.error('Couldnt get TX from SecretNodes: ', error)
+                }
+            }
+
             console.log('*TX*', tx)
+
             if (!tx) throw new Error('TX Not Found. SecretNodes may be behind. If this isnt fixed soon, contact Xiph.')
-            if (tx.raw_transaction.tx_response.code) throw new Error('TX for given hash failed, this shouldnt happen...')
+            if (tx.code) throw new Error('TX for given hash failed, this shouldnt happen...')
 
             const height = tx.height;
 
-            
 
         //--- Verify Teddy Transfers ---//
             setLoading('Verifying Teddy Transfers...');
@@ -583,7 +600,7 @@ export default function OrderModal(props){
                             </Col>
                             <Col>
                                 <span style={{fontWeight: "bold"}}>TX Hash</span><br/>
-                                <span style={{fontSize: "12px"}}><a target='_blank' rel='noreferrer' href={`https://secretnodes.com/transactions/${order?.tx_hash}`}>{order?.tx_hash || "None. Wait, that shouldnt happen..."}</a></span><br/>
+                                <span style={{fontSize: "12px"}}><a target='_blank' rel='noreferrer' href={process.env.REACT_APP_CHAIN_ID.includes('pulsar') ? `https://secretnodes.com/pulsar/transactions/${order?.tx_hash}` : `https://secretnodes.com/transactions/${order?.tx_hash}`}>{order?.tx_hash || "None. Wait, that shouldnt happen..."}</a></span><br/>
                             </Col>
                         </Row>
                         <br />

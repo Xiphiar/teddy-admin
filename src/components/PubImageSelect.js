@@ -29,7 +29,7 @@ export function PubImageSelect({value, set, options}) {
                     }
                     { options.map((option) => {
                         return (
-                            <option value={option.url}>{option.name}</option>
+                            <option value={option.url} key={option.name}>{option.name}</option>
                         )
                     })
                     /*
