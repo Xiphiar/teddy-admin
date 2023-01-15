@@ -26,12 +26,12 @@ async function encryptFile(file, id){
                 {
                     headers: {
                         'Content-Type': `multipart/form-data; boundary=${formData._boundary}`
-                    }, timeout: 10000
+                    }, timeout: 30000
                 });
         },
         null,
         {
-            retriesMax: 2,
+            retriesMax: 3,
             interval: 10000,
         },
     );
