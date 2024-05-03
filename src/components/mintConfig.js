@@ -1,5 +1,4 @@
 export const permitName = "MTC-Mint-Teddy";
-export const allowedDestinations = ["teddyapi.xiphiar.com", "localhost:9176", 'teddyapi-testnet.xiphiar.com'];
 
 export const pubBaseDesigns = [
     { type: "teddy", name: 'Teddy-bear', url: "https://arweave.net/0ZP_yaIeYc4vGwMxqoJdqgOGKjZpspl7ktGUmUvNee4"},

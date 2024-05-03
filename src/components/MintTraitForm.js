@@ -23,9 +23,9 @@ import encryptFile from '../utils/encrypt';
 import addPulsar from "../utils/addPulsar";
 import tryNTimes from "../utils/tryNTimes";
 import { PubImageSelect } from "./PubImageSelect";
+import {allowedDestinations} from '../constants'
 
 const permitName = "MTC-Mint-Teddy";
-const allowedDestinations = ["teddyapi.xiphiar.com", "localhost:9176", 'teddyapi-testnet.xiphiar.com'];
 
 const pubBaseDesigns = [
     { type: "teddy", name: 'Teddy-bear', url: "https://arweave.net/0ZP_yaIeYc4vGwMxqoJdqgOGKjZpspl7ktGUmUvNee4"},

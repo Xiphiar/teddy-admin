@@ -18,8 +18,9 @@ import PrivateDropzone from './PrivateDropzone'
 import encryptFile from '../utils/encrypt';
 import validAddress from '../utils/validAddress';
 
+import {allowedDestinations} from '../constants'
+
 const permitName = "MTC-Golden-Token";
-const allowedDestinations = ["teddyapi.xiphiar.com", "localhost:9176", 'teddyapi-testnet.xiphiar.com'];
 const permissions = ["mint"];
 
 export default function GoldTokenForm() {

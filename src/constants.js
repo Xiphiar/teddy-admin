@@ -1,0 +1,1 @@
+export const allowedDestinations = ["teddyapi.xiphiar.com", "localhost:9176", 'teddyapi-testnet.xiphiar.com', 'api.midnightteddyclub.art'];

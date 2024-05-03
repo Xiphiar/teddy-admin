@@ -18,9 +18,9 @@ import { MsgExecuteContract } from 'secretjs';
 import tryNTimes from "../utils/tryNTimes";
 import axios from 'axios';
 import { sleep } from '../utils/keplrHelper';
+import {allowedDestinations} from '../constants'
 
 const permitName = "MTC-Cancel-Order";
-const allowedDestinations = ["teddyapi.xiphiar.com", "localhost:9176", 'teddyapi-testnet.xiphiar.com'];
 
 //export default class OrderModal extends React.Component {
 export default function OrderModal(props){

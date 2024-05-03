@@ -10,9 +10,9 @@ import axios from 'axios'
 import { getOrdersPermit } from '../utils/keplrHelper'
 import { toast } from 'react-toastify'
 import { Spinner } from 'react-bootstrap'
+import {allowedDestinations} from '../constants'
 
 const permitName = "MTC-Factory";
-const allowedDestinations = ["teddyapi.xiphiar.com", "localhost:9176", 'teddyapi-testnet.xiphiar.com'];
 
 const sleep = duration => new Promise(res => setTimeout(res, duration));
 
