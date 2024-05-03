@@ -136,7 +136,10 @@ async function getPermit(address){
 async function getOrdersPermit(address, permitName, allowedDestinations){
     const storageKey = `orders-permit-v1-${address}`
     let data = myStorage.getItem(storageKey);
-    if (data) { return JSON.parse(data); }
+    if (data) {
+      console.log('Stored permit!', JSON.parse(data))
+      return JSON.parse(data);
+    }
 
     const chainId = process.env.REACT_APP_CHAIN_ID;
     window.keplr.enable(chainId);
