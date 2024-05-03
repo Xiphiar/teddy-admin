@@ -26,7 +26,8 @@ import tryNTimes from "../utils/tryNTimes";
 import { PubImageSelect } from "./PubImageSelect";
 import { queryTokenMetadata } from "../utils/dataHelper"
 import { getPermit } from "../utils/keplrHelper";
-import { permitName, allowedDestinations, faces, hands, heads, bodys, eyewears, colors, backgrounds, extraPubImages, pubBaseDesigns } from "./mintConfig"
+import { permitName, faces, hands, heads, bodys, eyewears, colors, backgrounds, extraPubImages, pubBaseDesigns } from "./mintConfig"
+import {allowedDestinations} from '../constants'
 
 export default function MintForm({order}) {
     const [loading, setLoading] = useState(false);
