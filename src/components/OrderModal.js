@@ -314,33 +314,34 @@ export default function OrderModal(props){
             const ids = [order.teddy1.toString(),order.teddy2.toString(),order.teddy3.toString()]
 
         //--- verify tx hash ---//
-            setLoading('Verifying Transaction...');
-            console.log('*TX Hash*', order.tx_hash);
+        //--- SecretNodes is dead so this doesn't work anymore ---//
+            // setLoading('Verifying Transaction...');
+            // console.log('*TX Hash*', order.tx_hash);
 
-            let tx;
-            // Try to get TX from node
-            try {
-                tx = await queryJs.query.getTx(order.tx_hash);
-            } catch (error) {
-                console.error('Couldnt get TX from node: ', error)
-            }
+            // let tx;
+            // // Try to get TX from node
+            // try {
+            //     tx = await queryJs.query.getTx(order.tx_hash);
+            // } catch (error) {
+            //     console.error('Couldnt get TX from node: ', error)
+            // }
 
-            // Try to get TX from SecretNodes
-            if (!tx) {
-                try {
-                    const {data} = await axios.get(`https://core.spartanapi.dev/secret/chains/${process.env.REACT_APP_CHAIN_ID}/transactions/${order.tx_hash}`)
-                    tx = data.raw_transaction.tx_response
-                } catch(error){
-                    console.error('Couldnt get TX from SecretNodes: ', error)
-                }
-            }
+            // // Try to get TX from SecretNodes
+            // if (!tx) {
+            //     try {
+            //         const {data} = await axios.get(`https://core.spartanapi.dev/secret/chains/${process.env.REACT_APP_CHAIN_ID}/transactions/${order.tx_hash}`)
+            //         tx = data.raw_transaction.tx_response
+            //     } catch(error){
+            //         console.error('Couldnt get TX from SecretNodes: ', error)
+            //     }
+            // }
 
-            console.log('*TX*', tx)
+            // console.log('*TX*', tx)
 
-            if (!tx) throw new Error('TX Not Found. SecretNodes may be behind. If this isnt fixed soon, contact Xiph.')
-            if (tx.code) throw new Error('TX for given hash failed, this shouldnt happen...')
+            // if (!tx) throw new Error('TX Not Found. SecretNodes may be behind. If this isnt fixed soon, contact Xiph.')
+            // if (tx.code) throw new Error('TX for given hash failed, this shouldnt happen...')
 
-            const height = tx.height;
+            // const height = tx.height;
 
 
         //--- Verify Teddy Transfers ---//
@@ -359,18 +360,18 @@ export default function OrderModal(props){
             const data = await queryTokenHistory(queryJs, walletAddress, signature)
             console.log('*HISTORY*',data)
 
-            // get xfers at tx height
-            const xfersAtHeight = data.filter(v=>v.block_height===height);
-            console.log('*XFERS AT TX HEIGHT*', xfersAtHeight)
+            // // get xfers at tx height
+            // const xfersAtHeight = data.filter(v=>v.block_height===height);
+            // console.log('*XFERS AT TX HEIGHT*', xfersAtHeight)
 
-            //find transfers for teddy IDs in this order
-            const teddy1xfer = xfersAtHeight.find(v=>v.token_id===ids[0])
-            const teddy2xfer = xfersAtHeight.find(v=>v.token_id===ids[1])
-            const teddy3xfer = xfersAtHeight.find(v=>v.token_id===ids[2])
-            if (!teddy1xfer || !teddy2xfer || !teddy3xfer){
-                throw new Error('Teddies didnt appear to be transfered on that TX, this shouldnt happen...')
-            }
-            console.log('*TEDDY XFERS*', teddy1xfer, teddy2xfer, teddy3xfer)
+            // //find transfers for teddy IDs in this order
+            // const teddy1xfer = xfersAtHeight.find(v=>v.token_id===ids[0])
+            // const teddy2xfer = xfersAtHeight.find(v=>v.token_id===ids[1])
+            // const teddy3xfer = xfersAtHeight.find(v=>v.token_id===ids[2])
+            // if (!teddy1xfer || !teddy2xfer || !teddy3xfer){
+            //     throw new Error('Teddies didnt appear to be transfered on that TX, this shouldnt happen...')
+            // }
+            // console.log('*TEDDY XFERS*', teddy1xfer, teddy2xfer, teddy3xfer)
 
             //verify connected wallet was recipient
             console.log("*Current Addr*", walletAddress)
