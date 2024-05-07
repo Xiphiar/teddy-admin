@@ -412,13 +412,13 @@ export default function OrderModal(props){
                 // }
                 // console.log('*GT XFER*', gtXfer)
 
-                //verify connected wallet was recipient
-                console.log("*Current Addr*", walletAddress)
-                if (gtXfer.action.transfer?.recipient!==walletAddress) throw new Error('You dont appear to be the recipient of the gold token transfer. Are you connected with the admin wallet?')
+                // //verify connected wallet was recipient
+                // console.log("*Current Addr*", walletAddress)
+                // if (gtXfer.action.transfer?.recipient!==walletAddress) throw new Error('You dont appear to be the recipient of the gold token transfer. Are you connected with the admin wallet?')
 
-                // verify previous owner is getting the new teddy
-                setLoading('Verifying Previous Owner...');
-                if (!gtXfer.action.transfer.from===order.owner) throw new Error(`Gold Token doesnt appear to have been transfered from the owner address. This shouldn't happen...`)
+                // // verify previous owner is getting the new teddy
+                // setLoading('Verifying Previous Owner...');
+                // if (!gtXfer.action.transfer.from===order.owner) throw new Error(`Gold Token doesnt appear to have been transfered from the owner address. This shouldn't happen...`)
             } else {
                 setLoading('Verifying sSCRT Payment...');
                 let vkey;
