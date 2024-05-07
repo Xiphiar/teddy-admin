@@ -405,12 +405,12 @@ export default function OrderModal(props){
                 // console.log('*GT XFERS AT TX HEIGHT*', gtXfersAtHeight)
 
                 //find transfers for Gold Token ID in this order
-                const gtXfer = gtXfersAtHeight.find(v=>v.token_id===order.goldToken)
+                // const gtXfer = gtXfersAtHeight.find(v=>v.token_id===order.goldToken)
 
-                if (!gtXfer){
-                    throw new Error('Gold Token didnt appear to be transfered on that TX, this shouldnt happen...')
-                }
-                console.log('*GT XFER*', gtXfer)
+                // if (!gtXfer){
+                //     throw new Error('Gold Token didnt appear to be transfered on that TX, this shouldnt happen...')
+                // }
+                // console.log('*GT XFER*', gtXfer)
 
                 //verify connected wallet was recipient
                 console.log("*Current Addr*", walletAddress)
