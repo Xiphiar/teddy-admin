@@ -401,8 +401,8 @@ export default function OrderModal(props){
                 console.log('*GT HISTORY*',gtData)
 
                 // get xfers at tx height
-                const gtXfersAtHeight = gtData.filter(v=>v.block_height===height);
-                console.log('*GT XFERS AT TX HEIGHT*', gtXfersAtHeight)
+                // const gtXfersAtHeight = gtData.filter(v=>v.block_height===height);
+                // console.log('*GT XFERS AT TX HEIGHT*', gtXfersAtHeight)
 
                 //find transfers for Gold Token ID in this order
                 const gtXfer = gtXfersAtHeight.find(v=>v.token_id===order.goldToken)
