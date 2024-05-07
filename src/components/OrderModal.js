@@ -373,17 +373,17 @@ export default function OrderModal(props){
             // }
             // console.log('*TEDDY XFERS*', teddy1xfer, teddy2xfer, teddy3xfer)
 
-            //verify connected wallet was recipient
-            console.log("*Current Addr*", walletAddress)
-            if (teddy1xfer.action.transfer?.recipient!==walletAddress) throw new Error('You dont appear to be the recipient of the transfer. Are you connected with the admin wallet?')
-            if (teddy2xfer.action.transfer?.recipient!==walletAddress) throw new Error('You dont appear to be the recipient of the transfer. Are you connected with the admin wallet?')
-            if (teddy3xfer.action.transfer?.recipient!==walletAddress) throw new Error('You dont appear to be the recipient of the transfer. Are you connected with the admin wallet?')
+            // //verify connected wallet was recipient
+            // console.log("*Current Addr*", walletAddress)
+            // if (teddy1xfer.action.transfer?.recipient!==walletAddress) throw new Error('You dont appear to be the recipient of the transfer. Are you connected with the admin wallet?')
+            // if (teddy2xfer.action.transfer?.recipient!==walletAddress) throw new Error('You dont appear to be the recipient of the transfer. Are you connected with the admin wallet?')
+            // if (teddy3xfer.action.transfer?.recipient!==walletAddress) throw new Error('You dont appear to be the recipient of the transfer. Are you connected with the admin wallet?')
 
-            // verify previous owner is getting the new teddy
-            setLoading('Verifying Previous Owner...');
-            if (!teddy1xfer.action.transfer.from===order.owner) throw new Error(`Teddy doesnt appear to have been transfered from the owner address. This shouldn't happen...`)
-            if (!teddy2xfer.action.transfer.from===order.owner) throw new Error(`Teddy doesnt appear to have been transfered from the owner address. This shouldn't happen...`)
-            if (!teddy3xfer.action.transfer.from===order.owner) throw new Error(`Teddy doesnt appear to have been transfered from the owner address. This shouldn't happen...`)
+            // // verify previous owner is getting the new teddy
+            // setLoading('Verifying Previous Owner...');
+            // if (!teddy1xfer.action.transfer.from===order.owner) throw new Error(`Teddy doesnt appear to have been transfered from the owner address. This shouldn't happen...`)
+            // if (!teddy2xfer.action.transfer.from===order.owner) throw new Error(`Teddy doesnt appear to have been transfered from the owner address. This shouldn't happen...`)
+            // if (!teddy3xfer.action.transfer.from===order.owner) throw new Error(`Teddy doesnt appear to have been transfered from the owner address. This shouldn't happen...`)
 
         //--- Verify Payment ---//
             if (order.goldToken) {
